@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>OGGI WMS - SISTEMA LOGÍSTICO</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        :root {
+            --roxo: #A10086;
+            --roxo-escuro: #6D2C91;
+            --roxo-claro: #c2189b;
+            --verde: #2e7d32;
+            --vermelho: #c62828;
+            --laranja: #ef6c00;
+            --azul: #1976d2;
+            --amarelo: #ffb300;
+            --cinza: #555;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+        }
+        body { background: var(--bg); color: #333; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 15px; }
+        .hidden { display: none !important; }
+        
+        .login-card { max-width: 400px; margin: 50px auto; background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 6px solid var(--roxo); }
+        .login-header { text-align: center; margin-bottom: 25px; }
+        .login-header h1 { color: var(--roxo); font-size: 2.2rem; margin-bottom: 5px; }
+        .login-header p { color: var(--cinza); font-size: 1rem; letter-spacing: 1px; }
+        .pass-container { position: relative; }
+        .pass-container input { padding-right: 70px; width: 100%; }
+        .toggle-pass { position: absolute; right: 12px; top: 12px; cursor: pointer; color: var(--roxo); font-size: 0.8rem; background: none; border: none; font-weight: bold; }
+        
+        header { background: var(--roxo); color: white; padding: 15px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: bold; font-size: 1.2rem; }
+        .user-role { font-size: 0.8rem; opacity: 0.9; }
+        .btn-sair { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+        
+        .welcome-card { background: linear-gradient(135deg, var(--roxo), var(--roxo-escuro)); color: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .welcome-card h1 { font-size: 1.8rem; margin-bottom: 5px; }
+        .welcome-card p { font-size: 1rem; opacity: 0.9; }
+        
+        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .btn-menu { padding: 15px 8px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: var(--roxo); color: white; text-transform: uppercase; font-size: 0.9rem; transition: 0.3s; }
+        .btn-menu:hover { background: var(--roxo-escuro); transform: scale(1.02); }
+        
+        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+        .card:hover { box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        .card-header h2 { color: var(--roxo-escuro); font-size: 1.2rem; border-left: 4px solid var(--roxo); padding-left: 10px; margin: 0; }
+        .card-content { padding: 15px; background: white; border-radius: 8px; margin-top: 10px; }
+        
+        h2 { color: var(--roxo-escuro); font-size: 1.2rem; margin-bottom: 15px; border-left: 4px solid var(--roxo); padding-left: 10px; }
+        h3 { color: var(--roxo); font-size: 1rem; margin: 15px 0 10px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 1rem; }
+        input:focus, select:focus { outline: 2px solid var(--roxo-claro); border-color: transparent; }
+        
+        button { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 5px 0; font-size: 1rem; transition: 0.2s; }
+        .btn-roxo { background: var(--roxo); color: white; }
+        .btn-verde { background: var(--verde); color: white; }
+        .btn-azul { background: var(--azul); color: white; }
+        .btn-alerta { background: var(--vermelho); color: white; }
+        .btn-cinza { background: var(--cinza); color: white; }
+        .btn-exportar { background: #4caf50; color: white; }
+        
+        .lista-dados { max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; background: white; }
+        .item-list { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .item-list:last-child { border-bottom: none; }
+        
+        .badge { padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
+        .badge-vermelho { background: #ffcdd2; color: var(--vermelho); }
+        .badge-verde { background: #c8e6c9; color: var(--verde); }
+        
+        .sino { position: relative; display: inline-block; cursor: pointer; }
+        .sino .badge { position: absolute; top: -5px; right: -5px; background: var(--vermelho); color: white; border-radius: 50%; padding: 2px 5px; font-size: 0.6rem; }
+        
+        .footer-license { margin-top: 20px; text-align: center; font-size: 0.75rem; color: #777; border-top: 1px solid #ddd; padding-top: 15px; }
+        
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-button { padding: 8px 16px; background: #ddd; border: none; border-radius: 4px; cursor: pointer; }
+        .tab-button.active { background: var(--roxo); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .filtros { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+            .menu-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    <!-- Firebase SDK (versão 8, compatível) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+<div class="container">
+    <div id="tela-login" class="login-card">
+        <div class="login-header">
+            <h1>OGGI WMS</h1>
+            <p>GESTÃO LOGÍSTICA</p>
+        </div>
+        <input type="text" id="login-mat" placeholder="Matrícula (6 dígitos)" maxlength="6" autofocus>
+        <div class="pass-container">
+            <input type="password" id="login-sen" placeholder="Senha" maxlength="20">
+            <button class="toggle-pass" onclick="toggleSenha('login-sen')">MOSTRAR</button>
+        </div>
+        <button onclick="validaLogin()" class="btn-roxo" style="width:100%;">ACESSAR</button>
+        <div style="text-align:right; margin-top:10px;">
+            <a onclick="recuperarSenha()" style="color:var(--azul); cursor:pointer;">Esqueci minha senha / Reiniciar</a>
+        </div>
+        <div class="footer-license">
+            <p style="margin-bottom:3px;">© 2026 OGGI WMS - Desenvolvido por Glailton Nascimento</p>
+            <p style="margin-bottom:0;">Licença: Glailton Nascimento</p>
+        </div>
+    </div>
+
+    <div id="sistema" class="hidden">
+        <header>
+            <div class="user-info">
+                <span class="user-name" id="display-nome"></span>
+                <span class="user-role" id="display-funcao"></span>
+                <span id="display-badge" style="margin-left:8px;"></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div class="sino" onclick="toggleNotificacoes()">
+                    🔔 <span id="notificacao-badge" class="badge" style="display:none;">0</span>
+                </div>
+                <button class="btn-sair" onclick="logout()">SAIR</button>
+            </div>
+        </header>
+        <div id="boas-vindas" class="welcome-card">
+            <h1>👋 Olá, <span id="welcome-nome"></span>!</h1>
+            <p id="welcome-mensagem">Bem-vindo ao OGGI WMS</p>
+        </div>
+        <div id="menu-dinamico" class="menu-grid" style="display:grid;"></div>
+        <div id="notificacoes-painel" class="card" style="display:none; max-height:300px; overflow-y:auto;"></div>
+        <div id="conteudo-abas"></div>
+        <div class="footer-license" style="opacity:0.5;">Licença: Glailton Nascimento</div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ==================== INICIALIZAÇÃO DO FIREBASE ====================
+        const firebaseConfig = {
+            databaseURL: "https://oggi-wms-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ==================== CONFIGURAÇÃO DAS RUAS (PADRÃO) ====================
+        let configRuas = {
+            A: { nome:'RUA A', ladoImpar:{tipo:'drive-in',pallets:2,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:180 },
+            B: { nome:'RUA B', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
+            C: { nome:'RUA C', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
+            D: { nome:'RUA D', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'drive-in',pallets:5,total:10}, niveis:6, capacidade:360 }
+        };
+
+        function recalcularCapacidades() {
+            for(let r in configRuas) {
+                let cfg = configRuas[r];
+                cfg.niveisList = Array.from({length: cfg.niveis}, (_,i) => (i+1).toString().padStart(2,'0'));
+                cfg.capacidade = (cfg.ladoImpar.total * cfg.niveis * cfg.ladoImpar.pallets) + 
+                                 (cfg.ladoPar.total * cfg.niveis * cfg.ladoPar.pallets);
+            }
+        }
+        recalcularCapacidades();
+
+        function calcularTotais() {
+            let porta = 0, drive = 0;
+            for(let r in configRuas) {
+                let cfg = configRuas[r];
+                if(cfg.ladoImpar.tipo === 'porta-pallet') porta += cfg.ladoImpar.total * cfg.niveis * cfg.ladoImpar.pallets;
+                else drive += cfg.ladoImpar.total * cfg.niveis * cfg.ladoImpar.pallets;
+                if(cfg.ladoPar.tipo === 'porta-pallet') porta += cfg.ladoPar.total * cfg.niveis * cfg.ladoPar.pallets;
+                else drive += cfg.ladoPar.total * cfg.niveis * cfg.ladoPar.pallets;
+            }
+            return { portaPallet: porta, driveIn: drive, total: porta + drive };
+        }
+        let TOTAIS = calcularTotais();
+        const SENHA_PADRAO = '123456';
+
+        // ==================== DADOS PERSISTENTES (INICIALMENTE VAZIOS) ====================
+        let usuarios = [];
+        let missoes = [];
+        let estoque = [];
+        let enderecamentos = [];
+        let descidas = [];
+        let contagensPicking = [];
+        let ruasVazias = [];
+        let statusPosicoes = {};
+        let skuCadastro = [];
+        let solicitacoes = [];
+        let mapeamentos = [];
+        let configNotificacao = { responsavel: '', horario: '07:30', ultimoEnvio: null };
+        let notificacoesNaoLidas = [];
+
+        let userLogado = null;
+        let notificacaoInterval = null;
+        let dadosCarregados = false; // controle para aguardar dados do Firebase
+
+        // ==================== FUNÇÕES DE PERSISTÊNCIA NO FIREBASE ====================
+        function carregarDadosFirebase() {
+            return database.ref().once('value').then((snapshot) => {
+                const dados = snapshot.val();
+                if (dados) {
+                    usuarios = dados.usuarios || [];
+                    missoes = dados.missoes || [];
+                    estoque = dados.estoque || [];
+                    enderecamentos = dados.enderecamentos || [];
+                    descidas = dados.descidas || [];
+                    contagensPicking = dados.contagensPicking || [];
+                    ruasVazias = dados.ruasVazias || [];
+                    statusPosicoes = dados.statusPosicoes || {};
+                    skuCadastro = dados.skuCadastro || [];
+                    solicitacoes = dados.solicitacoes || [];
+                    mapeamentos = dados.mapeamentos || [];
+                    configNotificacao = dados.configNotificacao || { responsavel: '', horario: '07:30', ultimoEnvio: null };
+                    configRuas = dados.configRuas || configRuas;
+                    notificacoesNaoLidas = dados.notificacoesNaoLidas || [];
+                } else {
+                    // Primeiro acesso: popular com usuários padrão
+                    const usuariosPadrao = [
+                        { mat:'000000', sen:'master', nome:'Glailton Nascimento', role:'dev' },
+                        { mat:'100100', sen:'123456', nome:'ALEX', role:'analista' },
+                        { mat:'500500', sen:'123456', nome:'MAGNO', role:'gestor' },
+                        { mat:'600100', sen:'123456', nome:'CARLOS (ENCARREGADO DIA)', role:'encarregado', turno:'diurno' },
+                        { mat:'600200', sen:'123456', nome:'FERNANDO (ENCARREGADO NOITE)', role:'encarregado', turno:'noturno' },
+                        { mat:'200200', sen:'123456', nome:'MARCELO MARROQUIM', role:'conferente', turno:'diurno' },
+                        { mat:'200300', sen:'123456', nome:'MARIO', role:'conferente', turno:'noturno' },
+                        { mat:'300300', sen:'123456', nome:'MATHEUS', role:'auxiliar', turno:'dia', habilitadoZeroUm:true },
+                        { mat:'300400', sen:'123456', nome:'ANANIAS', role:'auxiliar', turno:'noite', habilitadoZeroUm:false },
+                        { mat:'400400', sen:'123456', nome:'GLAILTON', role:'empilhador', turno:'dia' },
+                        { mat:'400500', sen:'123456', nome:'FLÁVIO', role:'empilhador', turno:'noite' }
+                    ];
+                    usuarios = usuariosPadrao.slice();
+                }
+                recalcularCapacidades();
+                TOTAIS = calcularTotais();
+                dadosCarregados = true;
+                console.log('Dados carregados do Firebase');
+            }).catch((error) => {
+                console.error('Erro ao carregar dados:', error);
+                dadosCarregados = true; // libera mesmo com erro, mas com dados vazios
+            });
+        }
+
+        function salvarDados() {
+            const dadosParaSalvar = {
+                usuarios,
+                missoes,
+                estoque,
+                enderecamentos,
+                descidas,
+                contagensPicking,
+                ruasVazias,
+                statusPosicoes,
+                skuCadastro,
+                solicitacoes,
+                mapeamentos,
+                configNotificacao,
+                configRuas,
+                notificacoesNaoLidas
+            };
+            database.ref().set(dadosParaSalvar)
+                .then(() => console.log('Dados salvos com sucesso!'))
+                .catch((error) => console.error('Erro ao salvar:', error));
+        }
+
+        // ==================== CARREGA DADOS ANTES DE QUALQUER AÇÃO ====================
+        carregarDadosFirebase();
+
+        // ==================== FUNÇÕES UTILITÁRIAS ====================
+        window.toggleSenha = function(id) {
+            const input = document.getElementById(id);
+            if (input) input.type = input.type === 'password' ? 'text' : 'password';
+        };
+
+        window.recuperarSenha = function() {
+            if (!dadosCarregados) return alert('Aguarde, carregando dados...');
+            let m = prompt("Digite sua matrícula de 6 dígitos:");
+            if (!m || m.length !== 6) return alert("Matrícula deve ter 6 dígitos!");
+            let u = usuarios.find(u => u.mat === m);
+            if (u) { u.sen = SENHA_PADRAO; salvarDados(); alert("Senha redefinida para " + SENHA_PADRAO); }
+            else alert("Matrícula não encontrada!");
+        };
+
+        // ==================== NOTIFICAÇÕES ====================
+        function adicionarNotificacao(msg, tipo = 'info', destinatarios = []) {
+            let id = Date.now().toString();
+            notificacoesNaoLidas.push({ id, msg, tipo, lida: false, data: new Date().toISOString(), destinatarios });
+            salvarDados();
+        }
+
+        function notificarParaPerfil(perfis, msg, tipo = 'info') {
+            let mats = usuarios.filter(u => perfis.includes(u.role)).map(u => u.mat);
+            adicionarNotificacao(msg, tipo, mats);
+        }
+
+        function atualizarBadgeNotificacoes() {
+            if (!userLogado) return;
+            let nonRead = notificacoesNaoLidas.filter(n => !n.lida && (n.destinatarios.length === 0 || n.destinatarios.includes(userLogado.mat))).length;
+            let badge = document.getElementById('notificacao-badge');
+            badge.innerText = nonRead;
+            badge.style.display = nonRead ? 'inline' : 'none';
+        }
+
+        window.toggleNotificacoes = function() {
+            let painel = document.getElementById('notificacoes-painel');
+            if (painel.style.display === 'none' || painel.style.display === '') {
+                notificacoesNaoLidas.forEach(n => { if (n.destinatarios.length === 0 || n.destinatarios.includes(userLogado.mat)) n.lida = true; });
+                salvarDados();
+                atualizarBadgeNotificacoes();
+                let notifsUsuario = notificacoesNaoLidas.filter(n => n.destinatarios.length === 0 || n.destinatarios.includes(userLogado.mat));
+                painel.innerHTML = notifsUsuario.length ? notifsUsuario.map(n => `<div class="notificacao">${n.msg}</div>`).join('') : '<p>Nenhuma notificação.</p>';
+                painel.style.display = 'block';
+            } else painel.style.display = 'none';
+        };
+
+        // ==================== POLLING ====================
+        function iniciarPollingNotificacoes() {
+            if (notificacaoInterval) clearInterval(notificacaoInterval);
+            notificacaoInterval = setInterval(() => {
+                if (!userLogado) return;
+                if (userLogado.role === 'analista' || userLogado.role === 'encarregado') {
+                    let skuAbaixo = [];
+                    skuCadastro.forEach(s => {
+                        if (s.minimo > 0) {
+                            let total = estoque.filter(i => i.sku === s.sku && i.nivel === '01').reduce((acc, i) => acc + i.qtd, 0);
+                            if (total < s.minimo) skuAbaixo.push(`${s.sku} (${total} < ${s.minimo})`);
+                        }
+                    });
+                    if (skuAbaixo.length) adicionarNotificacao(`⚠️ Estoque mínimo: ${skuAbaixo.join(', ')}`, 'alerta', usuarios.filter(u => u.role === 'analista' || u.role === 'encarregado').map(u => u.mat));
+                }
+                if (['conferente','auxiliar','empilhador'].includes(userLogado.role)) {
+                    let minhas = missoes.filter(m => m.responsavel === userLogado.mat && m.status === 'pendente').length;
+                    if (minhas) adicionarNotificacao(`🎯 Você tem ${minhas} nova(s) missão(ões).`, 'info', [userLogado.mat]);
+                }
+            }, 30000);
+        }
+        function pararPollingNotificacoes() { if (notificacaoInterval) clearInterval(notificacaoInterval); }
+
+        // ==================== LOGIN ====================
+        window.validaLogin = function() {
+            if (!dadosCarregados) {
+                alert('Aguarde, carregando dados...');
+                return;
+            }
+            let m = document.getElementById('login-mat').value.trim();
+            let s = document.getElementById('login-sen').value.trim();
+            let u = usuarios.find(u => u.mat === m && u.sen === s);
+            if (!u) {
+                alert('Matrícula ou senha inválidos! Verifique os dados e tente novamente.');
+                return;
+            }
+            userLogado = u;
+            document.getElementById('tela-login').classList.add('hidden');
+            document.getElementById('sistema').classList.remove('hidden');
+            document.getElementById('display-nome').innerText = u.nome;
+            let funcao = u.role.toUpperCase() + (u.turno ? ' (' + u.turno + ')' : '');
+            document.getElementById('display-funcao').innerText = funcao;
+            if (u.role === 'dev') document.getElementById('display-badge').innerHTML = '<span class="badge" style="background:gold;">👑 MASTER</span>';
+            document.getElementById('welcome-nome').innerText = u.nome;
+            let msg = 'Bem-vindo ao OGGI WMS';
+            if (u.role === 'conferente') msg = `Você tem ${missoes.filter(m => m.responsavel === u.mat && m.status === 'pendente').length} missões pendentes`;
+            else if (u.role === 'auxiliar') msg = `Você tem ${missoes.filter(m => m.responsavel === u.mat && m.status === 'pendente').length} missões`;
+            else if (u.role === 'empilhador') msg = `Você tem ${descidas.filter(d => d.responsavel === u.mat && d.status === 'pendente').length} abastecimentos pendentes`;
+            else if (u.role === 'encarregado') msg = `Visão do turno ${u.turno}`;
+            document.getElementById('welcome-mensagem').innerText = msg;
+
+            // Menu principal com 3 opções
+            let menu = document.getElementById('menu-dinamico');
+            menu.innerHTML = `
+                <button class="btn-menu" onclick="mostrarConfigRuas()">⚙️ CONFIG RUAS</button>
+                <button class="btn-menu" onclick="mostrarMissoes()">🎯 MISSÕES</button>
+                <button class="btn-menu" onclick="mostrarConsultas()">📊 CONSULTAS</button>
+            `;
+            document.getElementById('conteudo-abas').innerHTML = '';
+            document.getElementById('boas-vindas').style.display = 'block';
+            atualizarBadgeNotificacoes();
+            iniciarPollingNotificacoes();
+            salvarDados(); // opcional, apenas para registrar o login
+
+            // Verificar notificação de contagem agendada
+            verificarNotificacaoContagem();
+        };
+
+        window.logout = function() { pararPollingNotificacoes(); location.reload(); };
+
+        // ==================== NOTIFICAÇÃO DE CONTAGEM DIÁRIA ====================
+        function verificarNotificacaoContagem() {
+            if (userLogado.role !== 'analista' && userLogado.role !== 'dev') return;
+            if (!configNotificacao.responsavel) return;
+            let agora = new Date();
+            let hoje = agora.toDateString();
+            let [hora, minuto] = configNotificacao.horario.split(':').map(Number);
+            let horarioHoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), hora, minuto, 0);
+            if (agora >= horarioHoje && configNotificacao.ultimoEnvio !== hoje) {
+                let responsavel = usuarios.find(u => u.mat === configNotificacao.responsavel);
+                if (responsavel) {
+                    let mensagem = `Olá, ${responsavel.nome}! Você tem uma contagem de picking pendente hoje. Acesse o sistema para registrar.`;
+                    let telefone = responsavel.telefone ? responsavel.telefone.replace(/\D/g, '') : '';
+                    let url = telefone ? `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}` : `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+                    adicionarNotificacao(`📅 Contagem diária: <a href="${url}" target="_blank">Enviar lembrete no WhatsApp</a>`, 'info', [userLogado.mat]);
+                    configNotificacao.ultimoEnvio = hoje;
+                    salvarDados();
+                }
+            }
+        }
+
+        window.mostrarConfigNotificacao = function() {
+            let html = `<div class="card"><h2>🔔 Configurar Notificação de Contagem</h2>
+                <div class="card">
+                    <label>Responsável pela contagem:</label>
+                    <select id="notif-responsavel">
+                        <option value="">Selecione</option>
+                        ${usuarios.filter(u => u.role === 'conferente' || (u.role === 'auxiliar' && u.habilitadoZeroUm)).map(u => `<option value="${u.mat}" ${configNotificacao.responsavel === u.mat ? 'selected' : ''}>${u.nome} ${u.telefone ? '('+u.telefone+')' : ''}</option>`).join('')}
+                    </select>
+                    <label>Horário (formato HH:MM):</label>
+                    <input type="time" id="notif-horario" value="${configNotificacao.horario}">
+                    <button class="btn-verde" onclick="salvarConfigNotificacao()">Salvar</button>
+                </div>
+                <div class="card">
+                    <h3>Enviar lembrete agora</h3>
+                    <button class="btn-azul" onclick="enviarLembreteAgora()">📲 Enviar WhatsApp</button>
+                </div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.salvarConfigNotificacao = function() {
+            let resp = document.getElementById('notif-responsavel').value;
+            let horario = document.getElementById('notif-horario').value;
+            if (!resp || !horario) return alert('Preencha todos os campos');
+            configNotificacao.responsavel = resp;
+            configNotificacao.horario = horario;
+            configNotificacao.ultimoEnvio = null;
+            salvarDados();
+            alert('Configuração salva!');
+            mostrarMissoes();
+        };
+
+        window.enviarLembreteAgora = function() {
+            if (!configNotificacao.responsavel) return alert('Configure um responsável primeiro.');
+            let responsavel = usuarios.find(u => u.mat === configNotificacao.responsavel);
+            if (!responsavel) return alert('Responsável não encontrado.');
+            let mensagem = `Olá, ${responsavel.nome}! Faça a contagem de picking agora.`;
+            let telefone = responsavel.telefone ? responsavel.telefone.replace(/\D/g, '') : '';
+            let url = telefone ? `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}` : `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        };
+
+        // ==================== MISSÕES (submenu) ====================
+        window.mostrarMissoes = function() {
+            if (!dadosCarregados) return alert('Aguarde, carregando dados...');
+            let html = `<div class="card"><h2>🎯 MISSÕES</h2><div class="grid-3">`;
+            if (userLogado.role === 'analista' || userLogado.role === 'dev') {
+                html += `
+                    <div class="card" onclick="mostrarMapeamentoAnalista()"><h3>🗺️ MAPEAMENTO</h3><p>Acionar e visualizar inventário</p></div>
+                    <div class="card" onclick="mostrarCadastroSku()"><h3>📦 CADASTRO SKU</h3><p>Cadastrar/consultar SKU</p></div>
+                    <div class="card" onclick="mostrarVisualizarEnderecamentos()"><h3>📍 VER ENDEREÇAMENTOS</h3><p>Acompanhar endereçamentos</p></div>
+                    <div class="card" onclick="mostrarGestaoAbastecimento()"><h3>⬇️ GESTÃO ABASTECIMENTO</h3><p>Criar missões e acompanhar</p></div>
+                    <div class="card" onclick="mostrarGestaoContagem()"><h3>🔢 GESTÃO CONTAGEM</h3><p>Acionar contagens</p></div>
+                    <div class="card" onclick="mostrarGestaoRuasVazias()"><h3>🟢 GESTÃO RUAS VAZIAS</h3><p>Acionar verificação</p></div>
+                    <div class="card" onclick="mostrarEquipe()"><h3>👥 EQUIPE</h3><p>Cadastrar colaboradores</p></div>
+                    <div class="card" onclick="mostrarConfigNotificacao()"><h3>🔔 NOTIFICAÇÃO</h3><p>Configurar lembrete de contagem</p></div>
+                `;
+            } else if (userLogado.role === 'gestor') {
+                html += `
+                    <div class="card" onclick="mostrarSolicitacoes()"><h3>📝 SOLICITAR USUÁRIO</h3><p>Pedir novo analista/gestor/encarregado</p></div>
+                    <div class="card" onclick="mostrarMapaRuaLeitura()"><h3>🗺️ VER RUAS</h3><p>Visualizar ocupação das ruas</p></div>
+                `;
+            } else if (userLogado.role === 'encarregado') {
+                html += `
+                    <div class="card" onclick="mostrarMapaRuaLeitura()"><h3>🗺️ VER RUAS</h3><p>Visualizar ocupação das ruas</p></div>
+                    <div class="card" onclick="mostrarConsultas()"><h3>📊 CONSULTAS</h3><p>Acessar consultas de estoque</p></div>
+                `;
+            } else if (userLogado.role === 'conferente') {
+                html += `
+                    <div class="card" onclick="mostrarEnderecamento()"><h3>📍 ENDEREÇAR</h3><p>Registrar entrada no pulmão</p></div>
+                    <div class="card" onclick="mostrarContagemPicking()"><h3>🔢 CONTAR PICKING</h3><p>Realizar contagem</p></div>
+                    <div class="card" onclick="mostrarRuasVaziasColaborador()"><h3>🟢 RUAS VAZIAS</h3><p>Registrar vazios</p></div>
+                    <div class="card" onclick="mostrarMapeamentoColaborador()"><h3>🗺️ MAPEAMENTO</h3><p>Registrar inventário</p></div>
+                `;
+            } else if (userLogado.role === 'auxiliar') {
+                if (userLogado.habilitadoZeroUm) {
+                    html += `<div class="card" onclick="mostrarContagemPicking()"><h3>🔢 CONTAR PICKING</h3><p>Realizar contagem</p></div>`;
+                }
+                html += `<div class="card" onclick="mostrarRuasVaziasColaborador()"><h3>🟢 RUAS VAZIAS</h3><p>Registrar vazios</p></div>`;
+            } else if (userLogado.role === 'empilhador') {
+                html += `
+                    <div class="card" onclick="mostrarEnderecamento()"><h3>📍 ENDEREÇAR</h3><p>Registrar entrada no pulmão</p></div>
+                    <div class="card" onclick="mostrarAbastecimentoAutonomo()"><h3>⬇️ ABASTECER</h3><p>Descida autônoma</p></div>
+                    <div class="card" onclick="mostrarMapeamentoColaborador()"><h3>🗺️ MAPEAMENTO</h3><p>Registrar inventário</p></div>
+                `;
+            } else {
+                html += '<p>Nenhuma missão disponível para seu perfil.</p>';
+            }
+            html += `</div></div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        // ==================== CADASTRO SKU ====================
+        window.mostrarCadastroSku = function() {
+            let html = `<div class="card"><h2>📦 CADASTRO DE SKU</h2>`;
+            if (userLogado.role === 'analista' || userLogado.role === 'dev') {
+                html += `<div class="card"><h3>➕ NOVO SKU</h3>
+                    <input id="novo-sku" placeholder="SKU">
+                    <input id="novo-desc" placeholder="Descrição">
+                    <input id="novo-cap" type="number" placeholder="Caixas por pallet">
+                    <input id="novo-min" type="number" placeholder="Estoque mínimo no picking" value="0">
+                    <button class="btn-verde" onclick="cadastrarSku()">CADASTRAR</button>
+                </div>`;
+            }
+            html += `<h3>🔍 CONSULTAR SKU</h3>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="consulta-sku-cadastro" placeholder="Digite SKU" onkeyup="consultarSkuCadastro()" style="flex:1;">
+                    <button class="btn-cinza" onclick="limparConsultaSku()">🧹 Limpar</button>
+                </div>
+                <div id="resultado-cadastro" class="lista-dados"></div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.cadastrarSku = function() {
+            let sku = document.getElementById('novo-sku').value.toUpperCase();
+            let desc = document.getElementById('novo-desc').value;
+            let cap = parseInt(document.getElementById('novo-cap').value);
+            let min = parseInt(document.getElementById('novo-min').value) || 0;
+            if (!sku || !desc || !cap) return alert('Preencha todos os campos');
+            if (skuCadastro.find(s => s.sku === sku)) return alert('SKU já cadastrado');
+            skuCadastro.push({ sku, descricao: desc, caixasPorPallet: cap, tipo: 'P', minimo: min });
+            salvarDados();
+            alert('SKU cadastrado!');
+            mostrarCadastroSku();
+        };
+
+        window.consultarSkuCadastro = function() {
+            let termo = document.getElementById('consulta-sku-cadastro')?.value.toUpperCase();
+            let div = document.getElementById('resultado-cadastro');
+            if (!termo || termo.length < 2) { div.innerHTML = ''; return; }
+            let resultado = skuCadastro.filter(s => s.sku.includes(termo));
+            if (!resultado.length) { div.innerHTML = '<div class="item-list">Nenhum SKU encontrado.</div>'; return; }
+            div.innerHTML = resultado.map(s => {
+                let botoes = (userLogado.role === 'analista' || userLogado.role === 'dev') 
+                    ? `<button class="btn-azul" onclick="editarSku('${s.sku}')">✏️ Editar</button>
+                       <button class="btn-alerta" onclick="excluirSku('${s.sku}')">🗑️ Excluir</button>`
+                    : '';
+                return `<div class="item-list">
+                    <div><b>${s.sku}</b> - ${s.descricao} | Caixas/pallet: ${s.caixasPorPallet} | Mínimo: ${s.minimo}</div>
+                    <div>${botoes}</div>
+                </div>`;
+            }).join('');
+        };
+
+        window.limparConsultaSku = function() {
+            document.getElementById('consulta-sku-cadastro').value = '';
+            document.getElementById('resultado-cadastro').innerHTML = '';
+        };
+
+        window.editarSku = function(sku) {
+            let skuObj = skuCadastro.find(s => s.sku === sku);
+            if (!skuObj) return;
+            let html = `<div class="card"><h2>✏️ EDITAR SKU ${sku}</h2>
+                <div class="card">
+                    <input id="edit-sku" type="hidden" value="${skuObj.sku}">
+                    <input id="edit-desc" value="${skuObj.descricao}">
+                    <input id="edit-cap" type="number" value="${skuObj.caixasPorPallet}">
+                    <input id="edit-min" type="number" value="${skuObj.minimo}">
+                    <button class="btn-verde" onclick="salvarEdicaoSku('${sku}')">💾 SALVAR</button>
+                    <button class="btn-cinza" onclick="mostrarCadastroSku()">CANCELAR</button>
+                </div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.salvarEdicaoSku = function(skuAntigo) {
+            let desc = document.getElementById('edit-desc').value;
+            let cap = parseInt(document.getElementById('edit-cap').value);
+            let min = parseInt(document.getElementById('edit-min').value) || 0;
+            if (!desc || !cap) return alert('Preencha todos os campos');
+            let skuObj = skuCadastro.find(s => s.sku === skuAntigo);
+            if (skuObj) {
+                skuObj.descricao = desc;
+                skuObj.caixasPorPallet = cap;
+                skuObj.minimo = min;
+                salvarDados();
+                alert('SKU atualizado!');
+            }
+            mostrarCadastroSku();
+        };
+
+        window.excluirSku = function(sku) {
+            if (!confirm(`Tem certeza que deseja excluir o SKU ${sku}?`)) return;
+            skuCadastro = skuCadastro.filter(s => s.sku !== sku);
+            salvarDados();
+            alert('SKU excluído!');
+            consultarSkuCadastro();
+        };
+
+        // ==================== EQUIPE (com telefone) ====================
+        window.mostrarEquipe = function() {
+            let html = `<div class="card"><h2>👥 GESTÃO DE EQUIPE</h2>`;
+            if (userLogado.role === 'analista' || userLogado.role === 'dev') {
+                html += `<div class="card"><h3>➕ NOVO COLABORADOR</h3>
+                    <input id="novo-nome" placeholder="Nome completo">
+                    <input id="novo-mat" placeholder="Matrícula (6 dígitos)" maxlength="6">
+                    <div class="grid-2">
+                        <select id="novo-role">`;
+                if (userLogado.role === 'dev') {
+                    html += `<option value="analista">ANALISTA</option>
+                             <option value="gestor">GESTOR</option>
+                             <option value="encarregado">ENCARREGADO</option>`;
+                }
+                html += `<option value="conferente">CONFERENTE</option>
+                             <option value="auxiliar">AUXILIAR</option>
+                             <option value="empilhador">EMPILHADOR</option>
+                        </select>
+                        <select id="novo-turno"><option value="">Sem turno</option><option value="diurno">DIURNO</option><option value="noturno">NOTURNO</option></select>
+                    </div>
+                    <input type="text" id="novo-telefone" placeholder="Telefone (com DDD, apenas números)" maxlength="11">
+                    <input type="password" id="novo-senha" placeholder="Senha" value="123456">
+                    <button class="btn-verde" onclick="cadastrarColaborador()">CADASTRAR</button>
+                </div>`;
+            }
+            html += `<h3>📋 LISTA DE COLABORADORES</h3><div class="lista-dados">`;
+            usuarios.filter(u => !['dev'].includes(u.role)).forEach(u => {
+                html += `<div class="item-list"><div><strong>${u.nome}</strong> (${u.mat}) - ${u.role} ${u.turno || ''} Tel: ${u.telefone || ''}</div>`;
+                if (userLogado.role === 'analista' || userLogado.role === 'dev') {
+                    html += `<button class="btn-alerta" onclick="removerColaborador('${u.mat}')">🗑️</button>`;
+                }
+                html += `</div>`;
+            });
+            html += '</div></div>';
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.cadastrarColaborador = function() {
+            let nome = document.getElementById('novo-nome').value, mat = document.getElementById('novo-mat').value;
+            let role = document.getElementById('novo-role').value, turno = document.getElementById('novo-turno').value;
+            let telefone = document.getElementById('novo-telefone').value;
+            let senha = document.getElementById('novo-senha').value;
+            if (!nome || !mat) return alert('Preencha');
+            if (mat.length !== 6) return alert('Matrícula deve ter 6 dígitos');
+            if (usuarios.find(u => u.mat === mat)) return alert('Já existe');
+            usuarios.push({ mat, sen: senha, nome, role, turno: turno || undefined, telefone, habilitadoZeroUm: role === 'auxiliar' ? true : false });
+            salvarDados(); alert('Colaborador cadastrado!'); mostrarEquipe();
+        };
+
+        window.removerColaborador = function(mat) { if (confirm('Remover?')) { usuarios = usuarios.filter(u => u.mat !== mat); salvarDados(); mostrarEquipe(); } };
+
+        // ==================== ENDEREÇAMENTO (com lista temporária e botão copiar) ====================
+        let enderecamentoPendente = [];
+
+        window.mostrarEnderecamento = function() {
+            let html = `<div class="card"><h2>📍 ENDEREÇAMENTO (Pulmão)</h2>
+                <div class="card"><h3>Registrar endereçamento</h3>
+                    <div class="grid-5">
+                        <select id="end-rua">
+                            <option value="A">RUA A</option>
+                            <option value="B">RUA B</option>
+                            <option value="C">RUA C</option>
+                            <option value="D">RUA D</option>
+                        </select>
+                        <input id="end-pos" type="number" placeholder="Posição (01-20)" min="1" max="20">
+                        <select id="end-nivel">
+                            <option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option>
+                        </select>
+                        <input id="end-sku" placeholder="SKU" list="sku-list">
+                        <input id="end-lote" placeholder="Lote">
+                        <input id="end-qtd" type="number" placeholder="Quantidade">
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span>Tipo: </span>
+                        <span id="end-tipo-auto">P (Pallet)</span>
+                        <button class="btn-azul" onclick="adicionarEnderecamentoPendente()">➕ ADICIONAR</button>
+                    </div>
+                </div>
+                <h3>Itens pendentes de endereçamento</h3>
+                <div id="lista-end-pendente" class="lista-dados"></div>
+                <button class="btn-verde" onclick="finalizarEnderecamentos()" ${enderecamentoPendente.length === 0 ? 'disabled' : ''}>✅ ENVIAR TODOS</button>
+                <datalist id="sku-list">${skuCadastro.map(s => `<option value="${s.sku}">`).join('')}</datalist>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+            atualizarListaEndPendente();
+            // Auto-detectar tipo
+            document.getElementById('end-qtd').addEventListener('input', function() {
+                let sku = document.getElementById('end-sku').value.toUpperCase();
+                let qtd = parseInt(this.value);
+                let cad = skuCadastro.find(s => s.sku === sku);
+                let tipoSpan = document.getElementById('end-tipo-auto');
+                if (cad && qtd) {
+                    tipoSpan.innerText = (qtd === cad.caixasPorPallet) ? 'P (Pallet)' : 'F (Fração)';
+                } else {
+                    tipoSpan.innerText = 'P (Pallet)';
+                }
+            });
+            document.getElementById('end-sku').addEventListener('input', function() {
+                let sku = this.value.toUpperCase();
+                let qtd = document.getElementById('end-qtd').value;
+                let cad = skuCadastro.find(s => s.sku === sku);
+                let tipoSpan = document.getElementById('end-tipo-auto');
+                if (cad && qtd) {
+                    tipoSpan.innerText = (parseInt(qtd) === cad.caixasPorPallet) ? 'P (Pallet)' : 'F (Fração)';
+                } else {
+                    tipoSpan.innerText = 'P (Pallet)';
+                }
+            });
+        };
+
+        window.adicionarEnderecamentoPendente = function() {
+            let rua = document.getElementById('end-rua').value;
+            let pos = parseInt(document.getElementById('end-pos').value);
+            let nivel = document.getElementById('end-nivel').value;
+            let sku = document.getElementById('end-sku').value.toUpperCase();
+            let lote = document.getElementById('end-lote').value;
+            let qtd = parseInt(document.getElementById('end-qtd').value);
+            if (!rua || !pos || !nivel || !sku || !lote || !qtd) return alert('Preencha todos os campos');
+            let cad = skuCadastro.find(s => s.sku === sku);
+            if (!cad) return alert('SKU não cadastrado');
+            let tipo = (qtd === cad.caixasPorPallet) ? 'P' : 'F';
+            enderecamentoPendente.push({ rua, pos, nivel, sku, lote, qtd, tipo });
+            atualizarListaEndPendente();
+            document.getElementById('end-sku').value = '';
+            document.getElementById('end-lote').value = '';
+            document.getElementById('end-qtd').value = '';
+        };
+
+        function atualizarListaEndPendente() {
+            let div = document.getElementById('lista-end-pendente');
+            if (!div) return;
+            if (enderecamentoPendente.length === 0) {
+                div.innerHTML = '<p>Nenhum item pendente.</p>';
+                return;
+            }
+            div.innerHTML = enderecamentoPendente.map((item, idx) => 
+                `<div class="item-list">
+                    <div>Rua ${item.rua} Pos ${item.pos} Nv ${item.nivel} - SKU ${item.sku} Lote ${item.lote} Qtd ${item.qtd} (${item.tipo})</div>
+                    <div>
+                        <button class="btn-azul" onclick="copiarEnderecamento(${idx})">📋 Copiar</button>
+                        <button class="btn-alerta" onclick="removerEnderecamentoPendente(${idx})">❌</button>
+                    </div>
+                </div>`
+            ).join('');
+        }
+
+        window.copiarEnderecamento = function(idx) {
+            let item = enderecamentoPendente[idx];
+            document.getElementById('end-rua').value = item.rua;
+            document.getElementById('end-pos').value = item.pos;
+            document.getElementById('end-nivel').value = item.nivel;
+            document.getElementById('end-sku').value = item.sku;
+            document.getElementById('end-lote').value = item.lote;
+            document.getElementById('end-qtd').value = item.qtd;
+            // Atualiza o tipo auto
+            let cad = skuCadastro.find(s => s.sku === item.sku);
+            if (cad) {
+                document.getElementById('end-tipo-auto').innerText = (item.qtd === cad.caixasPorPallet) ? 'P (Pallet)' : 'F (Fração)';
+            }
+        };
+
+        window.removerEnderecamentoPendente = function(idx) {
+            enderecamentoPendente.splice(idx, 1);
+            atualizarListaEndPendente();
+        };
+
+        window.finalizarEnderecamentos = function() {
+            if (enderecamentoPendente.length === 0) return alert('Nenhum item para enviar');
+            for (let item of enderecamentoPendente) {
+                let cfgRua = configRuas[item.rua];
+                let lado = (item.pos % 2 === 1) ? 'ladoImpar' : 'ladoPar';
+                let capacidade = cfgRua[lado].pallets;
+                let itensNaPosicao = estoque.filter(i => i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel).length;
+                if (itensNaPosicao >= capacidade) {
+                    if (!confirm(`A posição R${item.rua} P${item.pos} Nv${item.nivel} já está com ${itensNaPosicao} pallet(s) (capacidade máxima ${capacidade}). Deseja substituir?`)) {
+                        continue;
+                    } else {
+                        estoque = estoque.filter(i => !(i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel));
+                    }
+                }
+                let existente = estoque.find(i => i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel && i.sku === item.sku);
+                if (existente) {
+                    existente.qtd += item.qtd;
+                    existente.lote = item.lote;
+                } else {
+                    estoque.push({
+                        sku: item.sku,
+                        qtd: item.qtd,
+                        rua: item.rua,
+                        posicao: item.pos,
+                        nivel: item.nivel,
+                        lote: item.lote,
+                        tipo: item.tipo,
+                        data: new Date().toISOString()
+                    });
+                }
+                enderecamentos.push({
+                    data: new Date().toISOString(),
+                    sku: item.sku,
+                    lote: item.lote,
+                    qtd: item.qtd,
+                    tipo: item.tipo,
+                    rua: item.rua,
+                    pos: item.pos,
+                    nivel: item.nivel,
+                    responsavel: userLogado.mat
+                });
+            }
+            enderecamentoPendente = [];
+            salvarDados();
+            alert('Endereçamentos concluídos!');
+            mostrarMissoes();
+        };
+
+        // ==================== VISUALIZAR ENDEREÇAMENTOS (com impressão) ====================
+        window.mostrarVisualizarEnderecamentos = function() {
+            let html = `<div class="card"><h2>📍 ENDEREÇAMENTOS REALIZADOS</h2>
+                <div class="lista-dados">`;
+            if (!enderecamentos.length) html += '<p>Nenhum registro.</p>';
+            else {
+                html += `<table style="width:100%; border-collapse:collapse;">
+                    <tr><th>Data</th><th>SKU</th><th>Lote</th><th>Qtd</th><th>Tipo</th><th>Endereço</th><th>Resp.</th></tr>`;
+                enderecamentos.slice().reverse().forEach(e => {
+                    html += `<tr><td>${new Date(e.data).toLocaleString()}</td><td>${e.sku}</td><td>${e.lote}</td><td>${e.qtd}</td><td>${e.tipo}</td><td>R${e.rua} ${e.pos} Nv${e.nivel}</td><td>${e.responsavel}</td></tr>`;
+                });
+                html += `</table>`;
+            }
+            html += `</div>`;
+            html += `<button class="btn-exportar" onclick="imprimirEnderecamentos()">🖨️ Imprimir</button>`;
+            html += `</div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.imprimirEnderecamentos = function() {
+            let conteudo = enderecamentos.map(e => 
+                `${new Date(e.data).toLocaleString()} - SKU ${e.sku} Lote ${e.lote} Qtd ${e.qtd} Tipo ${e.tipo} - R${e.rua} P${e.pos} Nv${e.nivel} - Resp: ${e.responsavel}`
+            ).join('\n');
+            let janela = window.open('', '_blank');
+            janela.document.write('<pre>' + conteudo + '</pre>');
+            janela.print();
+        };
+
+        // ==================== ABASTECIMENTO AUTÔNOMO ====================
+        window.mostrarAbastecimentoAutonomo = function() {
+            let html = `<div class="card"><h2>⬇️ ABASTECIMENTO (Descida)</h2>
+                <div class="card"><h3>Informe SKU e localização para dar baixa</h3>
+                    <div class="grid-4">
+                        <input id="desc-sku" placeholder="SKU" list="sku-list">
+                        <select id="desc-rua">
+                            <option value="A">RUA A</option>
+                            <option value="B">RUA B</option>
+                            <option value="C">RUA C</option>
+                            <option value="D">RUA D</option>
+                        </select>
+                        <input id="desc-pos" type="number" placeholder="Posição" min="1" max="20">
+                        <select id="desc-nivel">
+                            <option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option>
+                        </select>
+                    </div>
+                    <button class="btn-verde" onclick="confirmarDescida()">✅ CONFIRMAR DESCIDA</button>
+                </div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.confirmarDescida = function() {
+            let sku = document.getElementById('desc-sku').value.toUpperCase();
+            let rua = document.getElementById('desc-rua').value;
+            let pos = parseInt(document.getElementById('desc-pos').value);
+            let nivel = document.getElementById('desc-nivel').value;
+            if (!sku || !rua || !pos || !nivel) return alert('Preencha todos os campos');
+            let item = estoque.find(i => i.rua === rua && i.posicao === pos && i.nivel === nivel && i.sku === sku);
+            if (!item) return alert('Item não encontrado nesta localização.');
+            let qtdDescida = prompt(`Quantidade atual: ${item.qtd}. Quantos deseja descer? (padrão 1)`, '1');
+            if (qtdDescida === null) return;
+            qtdDescida = parseInt(qtdDescida);
+            if (isNaN(qtdDescida) || qtdDescida <= 0 || qtdDescida > item.qtd) return alert('Quantidade inválida.');
+            item.qtd -= qtdDescida;
+            if (item.qtd <= 0) {
+                estoque = estoque.filter(i => !(i.rua === rua && i.posicao === pos && i.nivel === nivel && i.sku === sku));
+                ruasVazias.push({
+                    rua, pos, nivel,
+                    data: new Date().toISOString(),
+                    responsavel: userLogado.mat,
+                    automatico: true
+                });
+            }
+            descidas.push({
+                id: Date.now().toString(),
+                sku, qtd: qtdDescida,
+                rua, pos, nivel,
+                responsavel: userLogado.mat,
+                status: 'concluido',
+                qtdDescida: qtdDescida,
+                data: new Date().toISOString()
+            });
+            salvarDados();
+            alert('Descida registrada!');
+            mostrarMissoes();
+        };
+
+        // ==================== GESTÃO DE ABASTECIMENTO ====================
+        window.mostrarGestaoAbastecimento = function() {
+            let html = `<div class="card"><h2>⬇️ GESTÃO DE ABASTECIMENTO</h2>`;
+            if (userLogado.role === 'analista' || userLogado.role === 'encarregado') {
+                html += `<div class="card"><h3>➕ NOVA MISSÃO</h3>
+                    <div class="grid-2">
+                        <input id="abast-sku" placeholder="SKU" list="sku-list">
+                        <input id="abast-qtd" type="number" placeholder="Quantidade">
+                    </div>
+                    <div class="grid-3">
+                        <select id="abast-rua-orig"><option value="">Origem (opcional)</option>${['A','B','C','D'].map(r=>`<option value="${r}">RUA ${r}</option>`).join('')}</select>
+                        <input id="abast-pos-orig" type="number" placeholder="Posição origem" min="1" max="20">
+                        <select id="abast-nivel-orig"><option value="">Nível origem</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option></select>
+                    </div>
+                    <select id="abast-responsavel"><option value="">Responsável</option>${usuarios.filter(u => u.role === 'empilhador').map(u => `<option value="${u.mat}">${u.nome}</option>`).join('')}</select>
+                    <button class="btn-verde" onclick="criarMissaoAbastecimento()">CRIAR</button>
+                </div>`;
+            }
+            html += `<h3>📋 PENDENTES</h3><div class="lista-dados">`;
+            descidas.filter(d => d.status === 'pendente').forEach(d => {
+                html += `<div class="item-list"><div><strong>SKU ${d.sku}</strong> - Qtd: ${d.qtd} | Origem: R${d.rua||''} ${d.pos||''} ${d.nivel||''} | Resp: ${usuarios.find(u=>u.mat===d.responsavel)?.nome||d.responsavel}</div>`;
+                if (userLogado.role === 'empilhador' && d.responsavel === userLogado.mat) {
+                    html += `<button class="btn-azul" onclick="executarAbastecimento('${d.id}')">⬇️ EXECUTAR</button>`;
+                }
+                html += `</div>`;
+            });
+            html += `</div>`;
+            if (userLogado.role === 'analista') {
+                html += `<button class="btn-alerta" onclick="limparPendentesAbastecimento()">🧹 Limpar todas as pendentes</button>`;
+            }
+            html += `<h3>✅ CONCLUÍDOS</h3><div class="lista-dados">`;
+            descidas.filter(d => d.status === 'concluido').slice(-10).reverse().forEach(d => {
+                html += `<div class="item-list">${new Date(d.data).toLocaleDateString()} - SKU ${d.sku} - Qtd: ${d.qtdDescida} - Resp: ${d.responsavel}</div>`;
+            });
+            html += `</div></div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.limparPendentesAbastecimento = function() {
+            if (!confirm('Tem certeza que deseja remover todas as missões de abastecimento pendentes?')) return;
+            descidas = descidas.filter(d => d.status !== 'pendente');
+            salvarDados();
+            mostrarGestaoAbastecimento();
+        };
+
+        window.criarMissaoAbastecimento = function() {
+            let sku = document.getElementById('abast-sku').value.toUpperCase();
+            let qtd = parseInt(document.getElementById('abast-qtd').value);
+            let ruaOrig = document.getElementById('abast-rua-orig').value;
+            let posOrig = document.getElementById('abast-pos-orig').value ? parseInt(document.getElementById('abast-pos-orig').value) : null;
+            let nivelOrig = document.getElementById('abast-nivel-orig').value;
+            let resp = document.getElementById('abast-responsavel').value;
+            if (!sku || !qtd || !resp) return alert('Preencha SKU, quantidade e responsável');
+            descidas.push({ id: Date.now().toString(), sku, qtd, rua: ruaOrig || '', pos: posOrig, nivel: nivelOrig || '', responsavel: resp, status: 'pendente', qtdDescida: 0, data: new Date().toISOString() });
+            adicionarNotificacao(`Nova missão de abastecimento: SKU ${sku}`, 'info', [resp]);
+            salvarDados();
+            alert('Missão criada!');
+            mostrarGestaoAbastecimento();
+        };
+
+        window.executarAbastecimento = function(id) {
+            let d = descidas.find(d => d.id === id);
+            if (!d) return;
+            let rest = d.qtd - (d.qtdDescida || 0);
+            let q = prompt(`Restam ${rest} unidades. Quantas vai descer agora?`);
+            if (!q) return;
+            let qtd = parseInt(q);
+            if (qtd > rest) return alert('Quantidade maior que o restante!');
+            if (d.rua && d.pos && d.nivel) {
+                let itemOrig = estoque.find(i => i.rua === d.rua && i.posicao === d.pos && i.nivel === d.nivel && i.sku === d.sku);
+                if (itemOrig) {
+                    if (itemOrig.qtd < qtd) return alert('Quantidade insuficiente na origem.');
+                    itemOrig.qtd -= qtd;
+                    if (itemOrig.qtd <= 0) {
+                        estoque = estoque.filter(i => !(i.rua === d.rua && i.posicao === d.pos && i.nivel === d.nivel && i.sku === d.sku));
+                        ruasVazias.push({ rua: d.rua, pos: d.pos, nivel: d.nivel, data: new Date().toISOString(), responsavel: userLogado.mat, automatico: true });
+                    }
+                } else {
+                    alert('Item de origem não encontrado!');
+                    return;
+                }
+            }
+            d.qtdDescida = (d.qtdDescida || 0) + qtd;
+            if (d.qtdDescida >= d.qtd) d.status = 'concluido';
+            d.data = new Date().toISOString();
+            salvarDados();
+            alert('Abastecimento registrado!');
+            mostrarGestaoAbastecimento();
+        };
+
+        // ==================== CONTAGEM DE PICKING ====================
+        window.mostrarContagemPicking = function() {
+            let html = `<div class="card"><h2>🔢 CONTAR PICKING</h2>`;
+            html += `<div class="card"><h3>Nova contagem</h3>
+                <div class="grid-2">
+                    <select id="pick-rua"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+                    <input id="pick-pos" placeholder="Posição (01-20)">
+                </div>
+                <div id="skus-pick"></div>
+                <button class="btn-azul" onclick="adicionarSkuPick()">➕ ADICIONAR SKU</button>
+                <button class="btn-verde" onclick="finalizarContagemPick()">✅ ENVIAR</button>
+            </div>`;
+            html += `<h3>Contagens realizadas</h3><div class="lista-dados">`;
+            if (contagensPicking.length === 0) {
+                html += '<p>Nenhuma contagem realizada.</p>';
+            } else {
+                contagensPicking.slice().reverse().forEach(c => {
+                    html += `<div class="item-list">${new Date(c.data).toLocaleString()} - Rua ${c.rua} Pos ${c.pos} - ${c.skus.map(s => `${s.sku}:${s.qtd}`).join(', ')} - Resp: ${c.responsavel}</div>`;
+                });
+            }
+            html += `</div>`;
+            html += `</div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+            // Adicionar primeira linha de SKU
+            adicionarSkuPick();
+        };
+
+        let contagemParcialPick = [];
+        window.adicionarSkuPick = function() {
+            let container = document.getElementById('skus-pick');
+            if (!container) return;
+            let idx = container.children.length;
+            let div = document.createElement('div');
+            div.className = 'grid-2';
+            div.innerHTML = `<input type="text" id="pick-sku-${idx}" placeholder="SKU" list="sku-list"><input type="number" id="pick-qtd-${idx}" placeholder="Quantidade">`;
+            container.appendChild(div);
+        };
+
+        window.finalizarContagemPick = function() {
+            let rua = document.getElementById('pick-rua').value;
+            let pos = document.getElementById('pick-pos').value;
+            let skus = [];
+            let i = 0;
+            while (document.getElementById(`pick-sku-${i}`)) {
+                let sku = document.getElementById(`pick-sku-${i}`).value;
+                let qtd = document.getElementById(`pick-qtd-${i}`).value;
+                if (sku && qtd) skus.push({ sku, qtd: parseInt(qtd) });
+                i++;
+            }
+            if (!skus.length) return alert('Adicione pelo menos um SKU');
+            contagensPicking.push({ rua, pos, skus, data: new Date().toISOString(), responsavel: userLogado.mat });
+            salvarDados();
+            alert('Contagem enviada!');
+            mostrarMissoes();
+        };
+
+        // ==================== GESTÃO DE CONTAGEM (para analista/encarregado) ====================
+        window.mostrarGestaoContagem = function() {
+            let html = `<div class="card"><h2>🔢 GESTÃO DE CONTAGEM</h2>`;
+            if (userLogado.role === 'analista' || userLogado.role === 'encarregado') {
+                html += `<div class="card"><h3>➕ ACIONAR CONTAGEM</h3>
+                    <select id="pick-responsavel"><option value="">Responsável</option>${usuarios.filter(u => u.role === 'conferente' || (u.role === 'auxiliar' && u.habilitadoZeroUm)).map(u => `<option value="${u.mat}">${u.nome}</option>`).join('')}</select>
+                    <button class="btn-verde" onclick="criarMissaoContagem()">📤 ENVIAR MISSÃO</button>
+                </div>`;
+            }
+            html += `<h3>Contagens realizadas</h3><div class="lista-dados">`;
+            if (contagensPicking.length === 0) {
+                html += '<p>Nenhuma contagem realizada.</p>';
+            } else {
+                contagensPicking.slice().reverse().forEach(c => {
+                    html += `<div class="item-list">${new Date(c.data).toLocaleString()} - Rua ${c.rua} Pos ${c.pos} - ${c.skus.map(s => `${s.sku}:${s.qtd}`).join(', ')} - Resp: ${c.responsavel}</div>`;
+                });
+            }
+            html += '</div>';
+            html += `</div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.criarMissaoContagem = function() {
+            let resp = document.getElementById('pick-responsavel').value;
+            if (!resp) return alert('Selecione um responsável');
+            missoes.push({ id: Date.now().toString(), tipo: 'contagem-picking', titulo: 'Contagem de Picking', descricao: 'Realizar contagem do nível 01', responsavel: resp, status: 'pendente' });
+            adicionarNotificacao('Missão de contagem de picking enviada', 'info', [resp]);
+            salvarDados();
+            alert('Missão enviada!');
+            mostrarGestaoContagem();
+        };
+
+        // ==================== GESTÃO DE RUAS VAZIAS (analista/encarregado) ====================
+        window.mostrarGestaoRuasVazias = function() {
+            let html = `<div class="card"><h2>🟢 GESTÃO DE RUAS VAZIAS</h2>`;
+            if (userLogado.role === 'analista' || userLogado.role === 'encarregado') {
+                html += `<div class="card"><h3>➕ ACIONAR VERIFICAÇÃO</h3>
+                    <select id="vazias-responsavel"><option value="">Responsável</option>${usuarios.filter(u => u.role === 'auxiliar' || u.role === 'conferente').map(u => `<option value="${u.mat}">${u.nome}</option>`).join('')}</select>
+                    <button class="btn-verde" onclick="criarMissaoRuaVazia()">📤 ENVIAR MISSÃO</button>
+                </div>`;
+            }
+            html += `<h3>Registros</h3><div class="lista-dados">`;
+            if (!ruasVazias.length) {
+                html += '<p>Nenhum registro.</p>';
+            } else {
+                ruasVazias.slice().reverse().forEach(r => {
+                    html += `<div class="item-list">${new Date(r.data).toLocaleString()} - Rua ${r.rua} Pos ${r.pos} Nv ${r.nivel || '-'} - ${r.responsavel} ${r.automatico ? '(auto)' : ''}</div>`;
+                });
+            }
+            html += '</div></div>';
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.criarMissaoRuaVazia = function() {
+            let resp = document.getElementById('vazias-responsavel').value;
+            if (!resp) return alert('Selecione um responsável');
+            missoes.push({ id: Date.now().toString(), tipo: 'ruas-vazias', titulo: 'Verificação de Ruas Vazias', descricao: 'Registrar posições vazias', responsavel: resp, status: 'pendente' });
+            adicionarNotificacao('Missão de ruas vazias enviada', 'info', [resp]);
+            salvarDados();
+            alert('Missão enviada!');
+            mostrarGestaoRuasVazias();
+        };
+
+        // ==================== RUAS VAZIAS COLABORADOR ====================
+        window.mostrarRuasVaziasColaborador = function() {
+            let html = `<div class="card"><h2>🟢 REGISTRAR RUAS VAZIAS</h2>
+                <div class="card"><h3>Nova posição</h3>
+                    <div class="grid-2">
+                        <select id="vazias-rua"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select>
+                        <input id="vazias-pos" placeholder="Posição">
+                    </div>
+                    <select id="vazias-nivel"><option value="">Nível (opcional)</option><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option></select>
+                    <button class="btn-azul" onclick="adicionarRuaVaziaParcial()">➕ ADICIONAR</button>
+                    <div id="lista-vazias-parciais" class="lista-dados" style="margin-top:10px;"></div>
+                    <button class="btn-verde" onclick="enviarRuasVaziasParciais()">✅ ENVIAR</button>
+                </div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        let parcialRuasVazias = [];
+        window.adicionarRuaVaziaParcial = function() {
+            let rua = document.getElementById('vazias-rua').value;
+            let pos = document.getElementById('vazias-pos').value;
+            let nivel = document.getElementById('vazias-nivel').value;
+            if (!rua || !pos) return alert('Preencha rua e posição');
+            parcialRuasVazias.push({ rua, pos, nivel, data: new Date().toISOString() });
+            atualizarListaParcialVazias();
+            document.getElementById('vazias-pos').value = '';
+        };
+
+        function atualizarListaParcialVazias() {
+            let div = document.getElementById('lista-vazias-parciais');
+            if (div) div.innerHTML = parcialRuasVazias.map(p => `<div class="item-list">Rua ${p.rua} Pos ${p.pos} Nv ${p.nivel || '-'}</div>`).join('');
+        }
+
+        window.enviarRuasVaziasParciais = function() {
+            if (!parcialRuasVazias.length) return alert('Nenhum registro');
+            parcialRuasVazias.forEach(p => { ruasVazias.push({ ...p, responsavel: userLogado.mat, automatico: false }); });
+            parcialRuasVazias = [];
+            salvarDados();
+            alert('Registros enviados!');
+            mostrarRuasVaziasColaborador();
+        };
+
+        // ==================== MAPEAMENTO ANALISTA (com filtros e impressão) ====================
+        window.mostrarMapeamentoAnalista = function() {
+            let html = `<div class="card"><h2>🗺️ MAPEAMENTO (INVENTÁRIO)</h2>`;
+            if (userLogado.role === 'analista' || userLogado.role === 'dev') {
+                html += `<div class="card"><h3>➕ ACIONAR MAPEAMENTO</h3>
+                    <select id="mapa-responsavel">
+                        <option value="">Selecione o responsável</option>
+                        ${usuarios.filter(u => u.role === 'conferente' || u.role === 'empilhador').map(u => `<option value="${u.mat}">${u.nome}</option>`).join('')}
+                    </select>
+                    <input id="mapa-obs" placeholder="Observações (opcional)">
+                    <button class="btn-verde" onclick="criarMissaoMapeamento()">📤 ENVIAR MISSÃO</button>
+                </div>`;
+            }
+            html += `<h3>Histórico de Mapeamentos</h3>`;
+            html += `<div class="filtros">
+                <input type="text" id="filtro-rua" placeholder="Filtrar por Rua" onkeyup="filtrarMapeamentos()">
+                <input type="text" id="filtro-sku" placeholder="Filtrar por SKU" onkeyup="filtrarMapeamentos()">
+                <button class="btn-cinza" onclick="limparFiltrosMapeamento()">🧹 Limpar</button>
+                <button class="btn-exportar" onclick="imprimirMapeamentosFiltrados()">🖨️ Imprimir filtrados</button>
+            </div>`;
+            html += `<div id="lista-mapeamentos" class="lista-dados">`;
+            html += gerarTabelaMapeamentos();
+            html += `</div></div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        function gerarTabelaMapeamentos(filtroRua = '', filtroSKU = '') {
+            let lista = mapeamentos.slice().reverse();
+            if (filtroRua) {
+                lista = lista.filter(m => m.itens.some(i => i.rua.toLowerCase().includes(filtroRua.toLowerCase())));
+            }
+            if (filtroSKU) {
+                lista = lista.filter(m => m.itens.some(i => i.sku.includes(filtroSKU.toUpperCase())));
+            }
+            if (lista.length === 0) return '<p>Nenhum mapeamento registrado.</p>';
+            let tabela = `<table style="width:100%; border-collapse:collapse;">
+                <tr><th>Data</th><th>Responsável</th><th>Itens</th><th>Ações</th></tr>`;
+            lista.forEach((m, idx) => {
+                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})`).join(', ');
+                tabela += `<tr>
+                    <td>${new Date(m.data).toLocaleString()}</td>
+                    <td>${m.responsavel}</td>
+                    <td>${itensStr}</td>
+                    <td><button class="btn-verde" onclick="aplicarMapeamento(${mapeamentos.indexOf(m)})">✅ Aplicar ao estoque</button></td>
+                </tr>`;
+            });
+            tabela += `</table>`;
+            return tabela;
+        }
+
+        window.filtrarMapeamentos = function() {
+            let filtroRua = document.getElementById('filtro-rua').value;
+            let filtroSKU = document.getElementById('filtro-sku').value;
+            document.getElementById('lista-mapeamentos').innerHTML = gerarTabelaMapeamentos(filtroRua, filtroSKU);
+        };
+
+        window.limparFiltrosMapeamento = function() {
+            document.getElementById('filtro-rua').value = '';
+            document.getElementById('filtro-sku').value = '';
+            document.getElementById('lista-mapeamentos').innerHTML = gerarTabelaMapeamentos();
+        };
+
+        window.imprimirMapeamentosFiltrados = function() {
+            let filtroRua = document.getElementById('filtro-rua')?.value || '';
+            let filtroSKU = document.getElementById('filtro-sku')?.value || '';
+            let lista = mapeamentos.slice().reverse();
+            if (filtroRua) {
+                lista = lista.filter(m => m.itens.some(i => i.rua.toLowerCase().includes(filtroRua.toLowerCase())));
+            }
+            if (filtroSKU) {
+                lista = lista.filter(m => m.itens.some(i => i.sku.includes(filtroSKU.toUpperCase())));
+            }
+            let conteudo = lista.map(m => {
+                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})`).join('; ');
+                return `${new Date(m.data).toLocaleString()} - Resp: ${m.responsavel} - Itens: ${itensStr}`;
+            }).join('\n');
+            let janela = window.open('', '_blank');
+            janela.document.write('<pre>' + conteudo + '</pre>');
+            janela.print();
+        };
+
+        window.aplicarMapeamento = function(index) {
+            let m = mapeamentos[index];
+            if (!m) return;
+            if (!confirm(`Aplicar este mapeamento ao estoque? Isso irá substituir os itens nas localizações mapeadas pelos dados do inventário.`)) return;
+            m.itens.forEach(item => {
+                let existente = estoque.find(i => i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel);
+                if (existente) {
+                    existente.sku = item.sku;
+                    existente.qtd = item.qtd;
+                    existente.lote = '';
+                } else {
+                    estoque.push({
+                        sku: item.sku,
+                        qtd: item.qtd,
+                        rua: item.rua,
+                        posicao: item.pos,
+                        nivel: item.nivel,
+                        lote: '',
+                        data: new Date().toISOString()
+                    });
+                }
+            });
+            // Remover o mapeamento do histórico (opcional)
+            if (confirm('Deseja remover este mapeamento do histórico?')) {
+                mapeamentos.splice(index, 1);
+            }
+            salvarDados();
+            alert('Mapeamento aplicado ao estoque!');
+            mostrarMapeamentoAnalista();
+        };
+
+        window.criarMissaoMapeamento = function() {
+            let resp = document.getElementById('mapa-responsavel').value;
+            let obs = document.getElementById('mapa-obs').value;
+            if (!resp) return alert('Selecione um responsável');
+            missoes.push({
+                id: Date.now().toString(),
+                tipo: 'mapeamento',
+                titulo: 'Mapeamento de Estoque',
+                descricao: 'Realizar inventário',
+                responsavel: resp,
+                status: 'pendente',
+                obs: obs,
+                data: new Date().toISOString()
+            });
+            adicionarNotificacao(`Missão de mapeamento enviada para ${usuarios.find(u=>u.mat===resp)?.nome}`, 'info', [resp]);
+            salvarDados();
+            alert('Missão de mapeamento criada!');
+            mostrarMapeamentoAnalista();
+        };
+
+        // ==================== MAPEAMENTO COLABORADOR (com layout melhorado e botão copiar) ====================
+        let itensMapeamentoTemp = [];
+
+        window.mostrarMapeamentoColaborador = function() {
+            let html = `<div class="card"><h2>🗺️ REGISTRAR MAPEAMENTO (INVENTÁRIO)</h2>
+                <div class="card"><h3>Itens do inventário</h3>
+                    <div class="grid-5" id="form-mapeamento">
+                        <input type="text" id="map-sku" placeholder="SKU" list="sku-list">
+                        <input type="number" id="map-qtd" placeholder="Quantidade">
+                        <select id="map-rua">
+                            <option value="A">RUA A</option>
+                            <option value="B">RUA B</option>
+                            <option value="C">RUA C</option>
+                            <option value="D">RUA D</option>
+                        </select>
+                        <input type="number" id="map-pos" placeholder="Posição" min="1" max="20">
+                        <select id="map-nivel">
+                            <option value="">Nível</option>
+                            <option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option>
+                        </select>
+                    </div>
+                    <button class="btn-azul" onclick="adicionarItemMapeamento()">➕ ADICIONAR ITEM</button>
+                </div>
+                <h3>Itens pendentes de mapeamento</h3>
+                <div id="itens-mapeamento" class="lista-dados"></div>
+                <button class="btn-verde" onclick="finalizarMapeamentoColaborador()">✅ ENVIAR MAPEAMENTO</button>
+                <datalist id="sku-list">${skuCadastro.map(s => `<option value="${s.sku}">`).join('')}</datalist>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+            itensMapeamentoTemp = [];
+            atualizarListaMapeamentoPendente();
+        };
+
+        window.adicionarItemMapeamento = function() {
+            let sku = document.getElementById('map-sku').value.toUpperCase();
+            let qtd = parseInt(document.getElementById('map-qtd').value);
+            let rua = document.getElementById('map-rua').value;
+            let pos = parseInt(document.getElementById('map-pos').value);
+            let nivel = document.getElementById('map-nivel').value;
+            if (!sku || !qtd || !rua || !pos || !nivel) return alert('Preencha todos os campos');
+            if (!skuCadastro.find(s => s.sku === sku)) return alert('SKU não cadastrado');
+            itensMapeamentoTemp.push({ sku, qtd, rua, pos, nivel });
+            atualizarListaMapeamentoPendente();
+            // Limpar campos
+            document.getElementById('map-sku').value = '';
+            document.getElementById('map-qtd').value = '';
+        };
+
+        function atualizarListaMapeamentoPendente() {
+            let div = document.getElementById('itens-mapeamento');
+            if (!div) return;
+            if (itensMapeamentoTemp.length === 0) {
+                div.innerHTML = '<p>Nenhum item pendente.</p>';
+                return;
+            }
+            div.innerHTML = itensMapeamentoTemp.map((item, idx) => 
+                `<div class="item-list">
+                    <div>SKU ${item.sku} - Qtd ${item.qtd} - R${item.rua} P${item.pos} Nv${item.nivel}</div>
+                    <div>
+                        <button class="btn-azul" onclick="copiarItemMapeamento(${idx})">📋 Copiar</button>
+                        <button class="btn-alerta" onclick="removerItemMapeamentoTemp(${idx})">❌</button>
+                    </div>
+                </div>`
+            ).join('');
+        }
+
+        window.copiarItemMapeamento = function(idx) {
+            let item = itensMapeamentoTemp[idx];
+            document.getElementById('map-sku').value = item.sku;
+            document.getElementById('map-qtd').value = item.qtd;
+            document.getElementById('map-rua').value = item.rua;
+            document.getElementById('map-pos').value = item.pos;
+            document.getElementById('map-nivel').value = item.nivel;
+        };
+
+        window.removerItemMapeamentoTemp = function(idx) {
+            itensMapeamentoTemp.splice(idx, 1);
+            atualizarListaMapeamentoPendente();
+        };
+
+        window.finalizarMapeamentoColaborador = function() {
+            if (itensMapeamentoTemp.length === 0) return alert('Adicione pelo menos um item.');
+            mapeamentos.push({
+                data: new Date().toISOString(),
+                responsavel: userLogado.mat,
+                itens: itensMapeamentoTemp.slice()
+            });
+            notificarParaPerfil(['analista'], `Novo mapeamento enviado por ${userLogado.nome}`, 'info');
+            itensMapeamentoTemp = [];
+            salvarDados();
+            alert('Mapeamento enviado com sucesso!');
+            mostrarMissoes();
+        };
+
+        // ==================== CONSULTAS ====================
+        window.mostrarConsultas = function() {
+            let html = `<div class="card"><h2>📊 CONSULTAS</h2><div class="grid-3">
+                <div class="card" onclick="mostrarConsultaGeral()"><h3>🔍 CONSULTA GERAL</h3><p>Estoque pulmão (níveis 2-6)</p></div>
+                <div class="card" onclick="mostrarEstoquePicking()"><h3>📦 CONSULTA PICKING</h3><p>Estoque nível 01</p></div>
+                <div class="card" onclick="mostrarMovimentacoesDia()"><h3>📋 MOV. DO DIA</h3><p>Abastecimentos do dia</p></div>
+            </div></div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        // ==================== MOVIMENTAÇÕES DO DIA ====================
+        window.mostrarMovimentacoesDia = function() {
+            let hoje = new Date().toLocaleDateString('pt-BR');
+            let html = `<div class="card"><h2>📋 MOVIMENTAÇÕES DO DIA (${hoje})</h2>`;
+            let hojeISO = new Date().toISOString().split('T')[0];
+            let movDia = descidas.filter(d => d.status === 'concluido' && d.data.startsWith(hojeISO));
+            if (movDia.length === 0) {
+                html += '<p>Nenhuma movimentação hoje.</p>';
+            } else {
+                let totalCx = movDia.reduce((acc, d) => acc + (d.qtdDescida || d.qtd), 0);
+                html += `<p><strong>Total de caixas movimentadas: ${totalCx}</strong></p>`;
+                html += `<div class="lista-dados"><table style="width:100%;"><tr><th>Hora</th><th>SKU</th><th>Qtd</th><th>Responsável</th></tr>`;
+                movDia.forEach(m => {
+                    let hora = new Date(m.data).toLocaleTimeString('pt-BR');
+                    html += `<tr><td>${hora}</td><td>${m.sku}</td><td>${m.qtdDescida || m.qtd}</td><td>${usuarios.find(u=>u.mat===m.responsavel)?.nome || m.responsavel}</td></tr>`;
+                });
+                html += '</table></div>';
+            }
+            html += `</div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        // ==================== CONSULTA GERAL (corrigido botão Limpar) ====================
+        window.mostrarConsultaGeral = function() {
+            let html = `<div class="card"><h2>🔍 CONSULTA GERAL (Pulmão - Níveis 2-6)</h2>
+                <div style="margin-bottom:10px;">
+                    <input type="text" id="filtro-geral" placeholder="SKU, descrição ou lote" onkeyup="atualizarConsultasGeral()" style="width:100%;">
+                </div>
+                <div class="tab-buttons">
+                    <button class="tab-button active" id="tab-resumo" onclick="mostrarAbaGeral('resumo')">Resumo por SKU</button>
+                    <button class="tab-button" id="tab-detalhe" onclick="mostrarAbaGeral('detalhe')">Detalhado por posição</button>
+                </div>
+                <div id="conteudo-resumo" class="tab-content active"></div>
+                <div id="conteudo-detalhe" class="tab-content"></div>
+                <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn-cinza" onclick="limparFiltroGeral()">🧹 Limpar filtro</button>
+                    <button class="btn-exportar" onclick="exportarCSVGeral()">📥 Exportar CSV</button>
+                    <button class="btn-azul" onclick="compartilharWhatsAppGeral()">📲 WhatsApp</button>
+                </div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+            atualizarConsultasGeral();
+        };
+
+        let abaGeralAtual = 'resumo';
+        window.mostrarAbaGeral = function(aba) {
+            abaGeralAtual = aba;
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${aba}`).classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById(`conteudo-${aba}`).classList.add('active');
+            atualizarConsultasGeral();
+        };
+
+        function atualizarConsultasGeral() {
+            let termo = document.getElementById('filtro-geral')?.value.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+            let itens = estoque.filter(i => parseInt(i.nivel) >= 2 && skuCadastro.some(s => s.sku === i.sku));
+            
+            if (termo.length >= 2) {
+                itens = itens.filter(i => {
+                    let cad = skuCadastro.find(s => s.sku === i.sku);
+                    return i.sku.includes(termo) || (cad?.descricao && cad.descricao.toUpperCase().includes(termo)) || (i.lote && i.lote.toUpperCase().includes(termo));
+                });
+            }
+
+            if (abaGeralAtual === 'resumo') {
+                let resumo = {};
+                itens.forEach(i => {
+                    if (!resumo[i.sku]) {
+                        let cad = skuCadastro.find(s => s.sku === i.sku);
+                        resumo[i.sku] = {
+                            descricao: cad?.descricao || '',
+                            totalCx: 0,
+                            posicoes: 0
+                        };
+                    }
+                    resumo[i.sku].totalCx += i.qtd;
+                    resumo[i.sku].posicoes++;
+                });
+                let html = '<table style="width:100%; border-collapse:collapse;"><tr><th>SKU</th><th>Descrição</th><th>Total caixas</th><th>Posições</th></tr>';
+                for (let sku in resumo) {
+                    html += `<tr><td>${sku}</td><td>${resumo[sku].descricao}</td><td>${resumo[sku].totalCx}</td><td>${resumo[sku].posicoes}</td></tr>`;
+                }
+                html += '</table>';
+                document.getElementById('conteudo-resumo').innerHTML = html;
+            } else {
+                let html = '<table style="width:100%; border-collapse:collapse;"><tr><th>SKU</th><th>Descrição</th><th>Lote</th><th>Rua</th><th>Pos</th><th>Nível</th><th>Qtd</th></tr>';
+                itens.forEach(i => {
+                    let cad = skuCadastro.find(s => s.sku === i.sku);
+                    html += `<tr><td>${i.sku}</td><td>${cad?.descricao || ''}</td><td>${i.lote || ''}</td><td>${i.rua}</td><td>${i.posicao}</td><td>${i.nivel}</td><td>${i.qtd}</td></tr>`;
+                });
+                html += '</table>';
+                document.getElementById('conteudo-detalhe').innerHTML = html;
+            }
+        }
+
+        window.limparFiltroGeral = function() {
+            document.getElementById('filtro-geral').value = '';
+            atualizarConsultasGeral();
+        };
+
+        window.exportarCSVGeral = function() {
+            let termo = document.getElementById('filtro-geral')?.value || '';
+            let itens = estoque.filter(i => parseInt(i.nivel) >= 2 && skuCadastro.some(s => s.sku === i.sku));
+            if (termo.length >= 2) {
+                termo = termo.toUpperCase();
+                itens = itens.filter(i => {
+                    let cad = skuCadastro.find(s => s.sku === i.sku);
+                    return i.sku.includes(termo) || (cad?.descricao && cad.descricao.toUpperCase().includes(termo)) || (i.lote && i.lote.toUpperCase().includes(termo));
+                });
+            }
+            let csv = 'SKU,Descrição,Lote,Rua,Pos,Nível,Quantidade\n';
+            itens.forEach(i => {
+                let cad = skuCadastro.find(s => s.sku === i.sku);
+                csv += `${i.sku},${cad?.descricao || ''},${i.lote || ''},${i.rua},${i.posicao},${i.nivel},${i.qtd}\n`;
+            });
+            let blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'consulta_geral.csv';
+            link.click();
+        };
+
+        window.compartilharWhatsAppGeral = function() {
+            let termo = document.getElementById('filtro-geral')?.value || '';
+            let itens = estoque.filter(i => parseInt(i.nivel) >= 2 && skuCadastro.some(s => s.sku === i.sku));
+            if (termo.length >= 2) {
+                termo = termo.toUpperCase();
+                itens = itens.filter(i => {
+                    let cad = skuCadastro.find(s => s.sku === i.sku);
+                    return i.sku.includes(termo) || (cad?.descricao && cad.descricao.toUpperCase().includes(termo)) || (i.lote && i.lote.toUpperCase().includes(termo));
+                });
+            }
+            let texto = 'Consulta Geral (Pulmão):\n';
+            itens.slice(0, 50).forEach(i => {
+                let cad = skuCadastro.find(s => s.sku === i.sku);
+                texto += `${i.sku} - ${cad?.descricao || ''} - R${i.rua} P${i.posicao} Nv${i.nivel} - ${i.qtd}\n`;
+            });
+            if (itens.length > 50) texto += '... (mais itens)';
+            let url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        };
+
+        // ==================== CONSULTA PICKING ====================
+        window.mostrarEstoquePicking = function() {
+            let html = `<div class="card"><h2>📦 CONSULTA PICKING (Nível 01)</h2>
+                <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="filtro-sku-picking" placeholder="Filtrar por SKU" onkeyup="filtrarEstoquePicking()" style="flex:2; min-width:150px;">
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <label><input type="checkbox" class="filtro-rua-picking" value="A" onchange="filtrarEstoquePicking()"> A</label>
+                        <label><input type="checkbox" class="filtro-rua-picking" value="B" onchange="filtrarEstoquePicking()"> B</label>
+                        <label><input type="checkbox" class="filtro-rua-picking" value="C" onchange="filtrarEstoquePicking()"> C</label>
+                        <label><input type="checkbox" class="filtro-rua-picking" value="D" onchange="filtrarEstoquePicking()"> D</label>
+                    </div>
+                    <button class="btn-cinza" onclick="limparFiltroPicking()">🧹 Limpar</button>
+                    <button class="btn-exportar" onclick="exportarCSVPicking()">📥 Exportar CSV</button>
+                    <button class="btn-azul" onclick="compartilharWhatsAppPicking()">📲 WhatsApp</button>
+                </div>
+                <div id="tabela-picking" class="lista-dados"></div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+            filtrarEstoquePicking();
+        };
+
+        function gerarTabelaEstoquePicking(filtroSKU = '', ruasSelecionadas = []) {
+            let itens = estoque.filter(i => i.nivel === '01' && skuCadastro.some(s => s.sku === i.sku));
+            if (filtroSKU) itens = itens.filter(i => i.sku.includes(filtroSKU));
+            if (ruasSelecionadas.length > 0) itens = itens.filter(i => ruasSelecionadas.includes(i.rua));
+            if (!itens.length) return '<p>Nenhum item no picking.</p>';
+            let tabela = `<table style="width:100%; border-collapse:collapse;"><tr><th>SKU</th><th>Descrição</th><th>Rua</th><th>Pos</th><th>Qtd</th><th>Mínimo</th></tr>`;
+            itens.forEach(i => {
+                let cad = skuCadastro.find(s => s.sku === i.sku) || { descricao: '', minimo: 0 };
+                tabela += `<tr><td>${i.sku}</td><td>${cad.descricao}</td><td>${i.rua}</td><td>${i.posicao}</td><td>${i.qtd}</td><td>${cad.minimo}</td></tr>`;
+            });
+            tabela += '</table>';
+            return tabela;
+        }
+
+        window.filtrarEstoquePicking = function() {
+            let filtroSKU = document.getElementById('filtro-sku-picking')?.value.toUpperCase() || '';
+            let ruasSelecionadas = Array.from(document.querySelectorAll('.filtro-rua-picking:checked')).map(cb => cb.value);
+            document.getElementById('tabela-picking').innerHTML = gerarTabelaEstoquePicking(filtroSKU, ruasSelecionadas);
+        };
+
+        window.limparFiltroPicking = function() {
+            document.getElementById('filtro-sku-picking').value = '';
+            document.querySelectorAll('.filtro-rua-picking').forEach(cb => cb.checked = false);
+            filtrarEstoquePicking();
+        };
+
+        window.exportarCSVPicking = function() {
+            let filtroSKU = document.getElementById('filtro-sku-picking')?.value.toUpperCase() || '';
+            let ruasSelecionadas = Array.from(document.querySelectorAll('.filtro-rua-picking:checked')).map(cb => cb.value);
+            let itens = estoque.filter(i => i.nivel === '01' && skuCadastro.some(s => s.sku === i.sku));
+            if (filtroSKU) itens = itens.filter(i => i.sku.includes(filtroSKU));
+            if (ruasSelecionadas.length > 0) itens = itens.filter(i => ruasSelecionadas.includes(i.rua));
+            let csv = 'SKU,Descrição,Rua,Pos,Quantidade,Mínimo\n';
+            itens.forEach(i => {
+                let cad = skuCadastro.find(s => s.sku === i.sku) || { descricao: '', minimo: 0 };
+                csv += `${i.sku},${cad.descricao},${i.rua},${i.posicao},${i.qtd},${cad.minimo}\n`;
+            });
+            let blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'consulta_picking.csv';
+            link.click();
+        };
+
+        window.compartilharWhatsAppPicking = function() {
+            let filtroSKU = document.getElementById('filtro-sku-picking')?.value.toUpperCase() || '';
+            let ruasSelecionadas = Array.from(document.querySelectorAll('.filtro-rua-picking:checked')).map(cb => cb.value);
+            let itens = estoque.filter(i => i.nivel === '01' && skuCadastro.some(s => s.sku === i.sku));
+            if (filtroSKU) itens = itens.filter(i => i.sku.includes(filtroSKU));
+            if (ruasSelecionadas.length > 0) itens = itens.filter(i => ruasSelecionadas.includes(i.rua));
+            let texto = 'Consulta Picking:\n';
+            itens.slice(0, 50).forEach(i => {
+                let cad = skuCadastro.find(s => s.sku === i.sku) || { descricao: '' };
+                texto += `${i.sku} - ${cad.descricao} - R${i.rua} P${i.posicao} - ${i.qtd} (mín: ${cad.minimo})\n`;
+            });
+            if (itens.length > 50) texto += '... (mais itens)';
+            let url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        };
+
+        // ==================== CONFIGURAÇÃO DE RUAS ====================
+        window.mostrarConfigRuas = function() {
+            if (userLogado.role !== 'analista' && userLogado.role !== 'dev') {
+                alert('Acesso negado. Apenas analista e desenvolvedor podem configurar ruas.');
+                return;
+            }
+            let html = `<div class="card"><h2>⚙️ CONFIGURAÇÃO DAS RUAS</h2>`;
+            for (let r in configRuas) {
+                let cfg = configRuas[r];
+                html += `<div class="card" style="border-left:4px solid var(--roxo);">
+                    <h3>RUA ${r}</h3>
+                    <p>Capacidade: ${cfg.capacidade} posições</p>
+                    <p>Ímpar: ${cfg.ladoImpar.tipo} (${cfg.ladoImpar.pallets} pallets)</p>
+                    <p>Par: ${cfg.ladoPar.tipo} (${cfg.ladoPar.pallets} pallets)</p>
+                    <p>Níveis: ${cfg.niveis}</p>
+                    <button class="btn-azul" onclick="mostrarMapaRua('${r}')">🗺️ VER MAPA</button>
+                    <button class="btn-alerta" onclick="limparRua('${r}')">🧹 Limpar rua</button>
+                </div>`;
+            }
+            html += '</div>';
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.limparRua = function(rua) {
+            if (userLogado.role !== 'analista' && userLogado.role !== 'dev') {
+                alert('Acesso negado.');
+                return;
+            }
+            if (!confirm(`Tem certeza que deseja remover todos os itens da RUA ${rua}?`)) return;
+            estoque = estoque.filter(i => i.rua !== rua);
+            salvarDados();
+            alert(`Rua ${rua} limpa.`);
+            mostrarConfigRuas();
+        };
+
+        window.mostrarMapaRua = function(rua) {
+            let cfg = configRuas[rua];
+            let html = `<div class="card"><h2>🗺️ MAPA DA RUA ${rua}</h2>
+                <div style="overflow-x:auto;"><table style="border-collapse:collapse; width:100%;">
+                <tr><th>Pos</th>`;
+            for (let niv = 1; niv <= cfg.niveis; niv++) html += `<th>Nv ${niv.toString().padStart(2,'0')}</th>`;
+            html += `</tr>`;
+            for (let pos = 1; pos <= 20; pos++) {
+                html += `<tr><td><strong>${pos.toString().padStart(2,'0')}</strong></td>`;
+                for (let niv = 1; niv <= cfg.niveis; niv++) {
+                    let nivelStr = niv.toString().padStart(2,'0');
+                    let key = `${rua}-${pos}-${nivelStr}`;
+                    let status = statusPosicoes[key];
+                    let temItem = estoque.find(i => i.rua === rua && i.posicao === pos && i.nivel === nivelStr);
+                    let cor = temItem ? '🟢' : (status?.bloqueado ? '🔴' : '⬜');
+                    let title = temItem ? `SKU: ${temItem.sku} | Qtd: ${temItem.qtd}` : (status?.bloqueado ? `Bloqueado: ${status.motivo}` : 'Vazio');
+                    if (userLogado.role === 'analista' || userLogado.role === 'dev') {
+                        html += `<td style="text-align:center; cursor:pointer;" onclick="editarPosicao('${rua}', ${pos}, '${nivelStr}')" title="${title}">${cor}</td>`;
+                    } else {
+                        html += `<td style="text-align:center;" title="${title}">${cor}</td>`;
+                    }
+                }
+                html += `</tr>`;
+            }
+            html += `</table></div>
+            <button class="btn-cinza" onclick="mostrarConfigRuas()">VOLTAR</button>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.editarPosicao = function(rua, pos, nivel) {
+            if (userLogado.role !== 'analista' && userLogado.role !== 'dev') return;
+            let key = `${rua}-${pos}-${nivel}`;
+            let status = statusPosicoes[key] || {};
+            let html = `<div class="card"><h2>📍 Posição Rua ${rua} - ${pos.toString().padStart(2,'0')} - Nível ${nivel}</h2>`;
+            let temItem = estoque.find(i => i.rua === rua && i.posicao === pos && i.nivel === nivel);
+            if (temItem) {
+                html += `<p><strong>Item:</strong> SKU ${temItem.sku} | Quantidade: ${temItem.qtd}</p>`;
+            } else html += `<p><em>Vazio</em></p>`;
+            if (status.bloqueado) {
+                html += `<p><strong>Bloqueado:</strong> ${status.motivo}</p>`;
+                html += `<button class="btn-verde" onclick="desbloquearPosicao('${rua}', ${pos}, '${nivel}')">✅ Desbloquear</button>`;
+            } else {
+                html += `<button class="btn-alerta" onclick="bloquearPosicao('${rua}', ${pos}, '${nivel}')">🚫 Bloquear</button>`;
+            }
+            html += `<button class="btn-cinza" onclick="mostrarMapaRua('${rua}')">VOLTAR</button>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.bloquearPosicao = function(rua, pos, nivel) {
+            if (userLogado.role !== 'analista' && userLogado.role !== 'dev') return;
+            let motivo = prompt("Motivo do bloqueio:");
+            if (motivo) {
+                let key = `${rua}-${pos}-${nivel}`;
+                statusPosicoes[key] = { bloqueado: true, motivo, data: new Date().toISOString() };
+                salvarDados();
+                mostrarMapaRua(rua);
+            }
+        };
+
+        window.desbloquearPosicao = function(rua, pos, nivel) {
+            if (userLogado.role !== 'analista' && userLogado.role !== 'dev') return;
+            let key = `${rua}-${pos}-${nivel}`;
+            delete statusPosicoes[key];
+            salvarDados();
+            mostrarMapaRua(rua);
+        };
+
+        // ==================== VISUALIZAÇÃO PARA GESTOR E ENCARREGADO ====================
+        window.mostrarMapaRuaLeitura = function() {
+            let html = `<div class="card"><h2>🗺️ VISUALIZAR RUAS</h2>
+                <select id="rua-select" onchange="mostrarMapaRuaLeituraRua()">
+                    <option value="">Selecione uma rua</option>
+                    <option value="A">RUA A</option>
+                    <option value="B">RUA B</option>
+                    <option value="C">RUA C</option>
+                    <option value="D">RUA D</option>
+                </select>
+                <div id="mapa-container"></div>
+            </div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.mostrarMapaRuaLeituraRua = function() {
+            let rua = document.getElementById('rua-select').value;
+            if (!rua) return;
+            let cfg = configRuas[rua];
+            let html = `<h3>RUA ${rua}</h3><div style="overflow-x:auto;"><table style="border-collapse:collapse; width:100%;">
+                <tr><th>Pos</th>`;
+            for (let niv = 1; niv <= cfg.niveis; niv++) {
+                html += `<th>Nv ${niv.toString().padStart(2,'0')}</th>`;
+            }
+            html += `</tr>`;
+            for (let pos = 1; pos <= 20; pos++) {
+                html += `<tr><td><strong>${pos.toString().padStart(2,'0')}</strong></td>`;
+                for (let niv = 1; niv <= cfg.niveis; niv++) {
+                    let nivelStr = niv.toString().padStart(2,'0');
+                    let temItem = estoque.find(i => i.rua === rua && i.posicao === pos && i.nivel === nivelStr);
+                    let cor = temItem ? '🟢' : '⬜';
+                    let title = temItem ? `SKU: ${temItem.sku} | Qtd: ${temItem.qtd}` : 'Vazio';
+                    html += `<td style="text-align:center; cursor:pointer;" onclick="alert('${title}')" title="${title}">${cor}</td>`;
+                }
+                html += `</tr>`;
+            }
+            html += `</table></div>`;
+            document.getElementById('mapa-container').innerHTML = html;
+        };
+
+        // ==================== SOLICITAÇÕES DE USUÁRIO (gestor) ====================
+        window.mostrarSolicitacoes = function() {
+            let html = `<div class="card"><h2>📝 SOLICITAR NOVO USUÁRIO</h2>
+                <div class="card">
+                    <input id="sol-nome" placeholder="Nome completo">
+                    <input id="sol-mat" placeholder="Matrícula (6 dígitos)" maxlength="6">
+                    <select id="sol-role">
+                        <option value="analista">Analista</option>
+                        <option value="gestor">Gestor</option>
+                        <option value="encarregado">Encarregado</option>
+                        <option value="conferente">Conferente</option>
+                        <option value="auxiliar">Auxiliar</option>
+                        <option value="empilhador">Empilhador</option>
+                    </select>
+                    <select id="sol-turno"><option value="">Sem turno</option><option value="diurno">Diurno</option><option value="noturno">Noturno</option></select>
+                    <textarea id="sol-just" placeholder="Justificativa (opcional)"></textarea>
+                    <button class="btn-verde" onclick="enviarSolicitacao()">ENVIAR SOLICITAÇÃO</button>
+                </div>`;
+            if (userLogado.role === 'dev') {
+                html += `<h3>Solicitações pendentes</h3><div class="lista-dados">`;
+                solicitacoes.filter(s => s.status === 'pendente').forEach(s => {
+                    html += `<div class="item-list"><div><strong>${s.nome}</strong> (${s.mat}) - ${s.role} ${s.turno||''}<br>Just: ${s.justificativa||''}</div>
+                        <button class="btn-verde" onclick="aprovarSolicitacao('${s.id}')">✅ Aprovar</button>
+                        <button class="btn-alerta" onclick="rejeitarSolicitacao('${s.id}')">❌ Rejeitar</button></div>`;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
+        };
+
+        window.enviarSolicitacao = function() {
+            let nome = document.getElementById('sol-nome').value;
+            let mat = document.getElementById('sol-mat').value;
+            let role = document.getElementById('sol-role').value;
+            let turno = document.getElementById('sol-turno').value;
+            let just = document.getElementById('sol-just').value;
+            if (!nome || !mat || !role) return alert('Preencha nome, matrícula e perfil');
+            if (mat.length !== 6) return alert('Matrícula deve ter 6 dígitos');
+            solicitacoes.push({ id: Date.now().toString(), nome, mat, role, turno, justificativa: just, status: 'pendente', data: new Date().toISOString(), solicitante: userLogado.mat });
+            adicionarNotificacao(`Nova solicitação de usuário: ${nome}`, 'info', ['000000']);
+            salvarDados();
+            alert('Solicitação enviada ao desenvolvedor!');
+            mostrarSolicitacoes();
+        };
+
+        window.aprovarSolicitacao = function(id) {
+            let sol = solicitacoes.find(s => s.id === id);
+            if (!sol) return;
+            if (usuarios.find(u => u.mat === sol.mat)) return alert('Matrícula já existe!');
+            usuarios.push({ mat: sol.mat, sen: SENHA_PADRAO, nome: sol.nome, role: sol.role, turno: sol.turno || undefined, habilitadoZeroUm: sol.role === 'auxiliar' ? true : false });
+            sol.status = 'aprovado';
+            adicionarNotificacao(`Sua solicitação para ${sol.nome} foi aprovada.`, 'info', [sol.solicitante]);
+            salvarDados();
+            alert('Usuário criado!');
+            mostrarSolicitacoes();
+        };
+
+        window.rejeitarSolicitacao = function(id) {
+            let sol = solicitacoes.find(s => s.id === id);
+            if (!sol) return;
+            sol.status = 'rejeitado';
+            adicionarNotificacao(`Sua solicitação para ${sol.nome} foi rejeitada.`, 'alerta', [sol.solicitante]);
+            salvarDados();
+            alert('Solicitação rejeitada.');
+            mostrarSolicitacoes();
+        };
+
+        // ==================== INÍCIO ====================
+        // Não precisa de window.onload, pois o carregamento é assíncrono.
+        // A interface só será usada após dadosCarregados.
+    })();
+</script>
+</body>
+</html>
