@@ -510,7 +510,7 @@
             document.getElementById('boas-vindas').style.display = 'none';
         };
 
-        // ==================== CADASTRO SKU ====================
+        // ==================== CADASTRO SKU (COM IMPORTAÇÃO CSV) ====================
         window.mostrarCadastroSku = function() {
             let html = `<div class="card"><h2>📦 CADASTRO DE SKU</h2>`;
             if (userLogado.role === 'analista' || userLogado.role === 'dev') {
@@ -522,6 +522,12 @@
                     <button class="btn-verde" onclick="cadastrarSku()">CADASTRAR</button>
                 </div>`;
             }
+            // ===== NOVO: IMPORTAR CSV =====
+            html += `<div class="card"><h3>📥 IMPORTAR SKUs VIA CSV</h3>
+                <input type="file" id="csv-sku-file" accept=".csv" style="margin-bottom:10px;">
+                <button class="btn-azul" onclick="importarSkuCSV()">📤 IMPORTAR</button>
+                <div id="resultado-importacao" style="margin-top:10px;"></div>
+            </div>`;
             html += `<h3>🔍 CONSULTAR SKU</h3>
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <input type="text" id="consulta-sku-cadastro" placeholder="Digite SKU" onkeyup="consultarSkuCadastro()" style="flex:1;">
@@ -544,6 +550,56 @@
             salvarDados();
             alert('SKU cadastrado!');
             mostrarCadastroSku();
+        };
+
+        // ===== NOVA FUNÇÃO: IMPORTAR SKU CSV =====
+        window.importarSkuCSV = function() {
+            const fileInput = document.getElementById('csv-sku-file');
+            if (!fileInput || !fileInput.files.length) {
+                alert('Selecione um arquivo CSV primeiro.');
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let importados = 0;
+                let erros = [];
+                // Assume que a primeira linha é cabeçalho (ignoramos)
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line === '') continue;
+                    const parts = line.split(',');
+                    if (parts.length < 3) {
+                        erros.push(`Linha ${i+1}: formato inválido (esperado pelo menos 3 colunas)`);
+                        continue;
+                    }
+                    const sku = parts[0].trim().toUpperCase();
+                    const desc = parts[1].trim();
+                    const cap = parseInt(parts[2].trim());
+                    const min = parts.length > 3 ? parseInt(parts[3].trim()) || 0 : 0;
+                    if (!sku || !desc || isNaN(cap)) {
+                        erros.push(`Linha ${i+1}: dados inválidos`);
+                        continue;
+                    }
+                    if (skuCadastro.find(s => s.sku === sku)) {
+                        erros.push(`Linha ${i+1}: SKU ${sku} já cadastrado`);
+                        continue;
+                    }
+                    skuCadastro.push({ sku, descricao: desc, caixasPorPallet: cap, tipo: 'P', minimo: min });
+                    importados++;
+                }
+                salvarDados();
+                const divResultado = document.getElementById('resultado-importacao');
+                divResultado.innerHTML = `<p style="color:green;">${importados} SKUs importados com sucesso.</p>`;
+                if (erros.length) {
+                    divResultado.innerHTML += `<p style="color:red;">Erros:<br>${erros.join('<br>')}</p>`;
+                }
+                // Atualiza a consulta se estiver visível
+                consultarSkuCadastro();
+            };
+            reader.readAsText(file);
         };
 
         window.consultarSkuCadastro = function() {
@@ -1859,4 +1915,4 @@
     })();
 </script>
 </body>
-</html>
+        </html>         
