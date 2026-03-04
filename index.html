@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -58,6 +59,7 @@
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
         
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 1rem; }
         input:focus, select:focus { outline: 2px solid var(--roxo-claro); border-color: transparent; }
@@ -92,7 +94,7 @@
         .filtros { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         
         @media (max-width: 768px) {
-            .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+            .grid-2, .grid-3, .grid-4, .grid-5, .grid-6 { grid-template-columns: 1fr; }
             .menu-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -1295,7 +1297,7 @@
             let tabela = `<table style="width:100%; border-collapse:collapse;">
                 <tr><th>Data</th><th>Responsável</th><th>Itens</th><th>Ações</th></tr>`;
             lista.forEach((m, idx) => {
-                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})`).join(', ');
+                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})${i.lote ? ' Lote:'+i.lote : ''}`).join(', ');
                 tabela += `<tr>
                     <td>${new Date(m.data).toLocaleString()}</td>
                     <td>${m.responsavel}</td>
@@ -1330,7 +1332,7 @@
                 lista = lista.filter(m => m.itens.some(i => i.sku.includes(filtroSKU.toUpperCase())));
             }
             let conteudo = lista.map(m => {
-                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})`).join('; ');
+                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})${i.lote ? ' Lote:'+i.lote : ''}`).join('; ');
                 return `${new Date(m.data).toLocaleString()} - Resp: ${m.responsavel} - Itens: ${itensStr}`;
             }).join('\n');
             let janela = window.open('', '_blank');
@@ -1347,7 +1349,7 @@
                 if (existente) {
                     existente.sku = item.sku;
                     existente.qtd = item.qtd;
-                    existente.lote = '';
+                    existente.lote = item.lote || '';
                 } else {
                     estoque.push({
                         sku: item.sku,
@@ -1355,7 +1357,7 @@
                         rua: item.rua,
                         posicao: item.pos,
                         nivel: item.nivel,
-                        lote: '',
+                        lote: item.lote || '',
                         data: new Date().toISOString()
                     });
                 }
@@ -1389,15 +1391,16 @@
             mostrarMapeamentoAnalista();
         };
 
-        // ==================== MAPEAMENTO COLABORADOR (com layout melhorado e botão copiar) ====================
+        // ==================== MAPEAMENTO COLABORADOR (COM CAMPO LOTE) ====================
         let itensMapeamentoTemp = [];
 
         window.mostrarMapeamentoColaborador = function() {
             let html = `<div class="card"><h2>🗺️ REGISTRAR MAPEAMENTO (INVENTÁRIO)</h2>
                 <div class="card"><h3>Itens do inventário</h3>
-                    <div class="grid-5" id="form-mapeamento">
+                    <div class="grid-6" id="form-mapeamento">
                         <input type="text" id="map-sku" placeholder="SKU" list="sku-list">
                         <input type="number" id="map-qtd" placeholder="Quantidade">
+                        <input type="text" id="map-lote" placeholder="Lote">
                         <select id="map-rua">
                             <option value="A">RUA A</option>
                             <option value="B">RUA B</option>
@@ -1426,16 +1429,18 @@
         window.adicionarItemMapeamento = function() {
             let sku = document.getElementById('map-sku').value.toUpperCase();
             let qtd = parseInt(document.getElementById('map-qtd').value);
+            let lote = document.getElementById('map-lote').value;
             let rua = document.getElementById('map-rua').value;
             let pos = parseInt(document.getElementById('map-pos').value);
             let nivel = document.getElementById('map-nivel').value;
-            if (!sku || !qtd || !rua || !pos || !nivel) return alert('Preencha todos os campos');
+            if (!sku || !qtd || !rua || !pos || !nivel) return alert('Preencha SKU, quantidade, rua, posição e nível');
             if (!skuCadastro.find(s => s.sku === sku)) return alert('SKU não cadastrado');
-            itensMapeamentoTemp.push({ sku, qtd, rua, pos, nivel });
+            itensMapeamentoTemp.push({ sku, qtd, lote, rua, pos, nivel });
             atualizarListaMapeamentoPendente();
             // Limpar campos
             document.getElementById('map-sku').value = '';
             document.getElementById('map-qtd').value = '';
+            document.getElementById('map-lote').value = '';
         };
 
         function atualizarListaMapeamentoPendente() {
@@ -1447,7 +1452,7 @@
             }
             div.innerHTML = itensMapeamentoTemp.map((item, idx) => 
                 `<div class="item-list">
-                    <div>SKU ${item.sku} - Qtd ${item.qtd} - R${item.rua} P${item.pos} Nv${item.nivel}</div>
+                    <div>SKU ${item.sku} - Qtd ${item.qtd} - Lote ${item.lote || '—'} - R${item.rua} P${item.pos} Nv${item.nivel}</div>
                     <div>
                         <button class="btn-azul" onclick="copiarItemMapeamento(${idx})">📋 Copiar</button>
                         <button class="btn-alerta" onclick="removerItemMapeamentoTemp(${idx})">❌</button>
@@ -1460,6 +1465,7 @@
             let item = itensMapeamentoTemp[idx];
             document.getElementById('map-sku').value = item.sku;
             document.getElementById('map-qtd').value = item.qtd;
+            document.getElementById('map-lote').value = item.lote || '';
             document.getElementById('map-rua').value = item.rua;
             document.getElementById('map-pos').value = item.pos;
             document.getElementById('map-nivel').value = item.nivel;
@@ -1475,7 +1481,7 @@
             mapeamentos.push({
                 data: new Date().toISOString(),
                 responsavel: userLogado.mat,
-                itens: itensMapeamentoTemp.slice()
+                itens: itensMapeamentoTemp.slice() // aqui já inclui o lote
             });
             notificarParaPerfil(['analista'], `Novo mapeamento enviado por ${userLogado.nome}`, 'info');
             itensMapeamentoTemp = [];
