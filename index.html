@@ -473,6 +473,8 @@
                     <div class="card" onclick="mostrarGestaoRuasVazias()"><h3>🟢 GESTÃO RUAS VAZIAS</h3><p>Acionar verificação</p></div>
                     <div class="card" onclick="mostrarEquipe()"><h3>👥 EQUIPE</h3><p>Cadastrar colaboradores</p></div>
                     <div class="card" onclick="mostrarConfigNotificacao()"><h3>🔔 NOTIFICAÇÃO</h3><p>Configurar lembrete de contagem</p></div>
+                    <!-- NOVO: Endereçar para analista -->
+                    <div class="card" onclick="mostrarEnderecamento()"><h3>📍 ENDEREÇAR</h3><p>Registrar entrada no pulmão</p></div>
                 `;
             } else if (userLogado.role === 'gestor') {
                 html += `
@@ -522,7 +524,7 @@
                     <button class="btn-verde" onclick="cadastrarSku()">CADASTRAR</button>
                 </div>`;
             }
-            // ===== NOVO: IMPORTAR CSV =====
+            // ===== IMPORTAR CSV =====
             html += `<div class="card"><h3>📥 IMPORTAR SKUs VIA CSV</h3>
                 <input type="file" id="csv-sku-file" accept=".csv" style="margin-bottom:10px;">
                 <button class="btn-azul" onclick="importarSkuCSV()">📤 IMPORTAR</button>
@@ -552,7 +554,6 @@
             mostrarCadastroSku();
         };
 
-        // ===== NOVA FUNÇÃO: IMPORTAR SKU CSV =====
         window.importarSkuCSV = function() {
             const fileInput = document.getElementById('csv-sku-file');
             if (!fileInput || !fileInput.files.length) {
@@ -834,20 +835,28 @@
             atualizarListaEndPendente();
         };
 
+        // ==================== FUNÇÃO FINALIZAR ENDEREÇAMENTOS (ATUALIZADA) ====================
         window.finalizarEnderecamentos = function() {
             if (enderecamentoPendente.length === 0) return alert('Nenhum item para enviar');
+
+            let resumo = []; // Para guardar os detalhes de cada item armazenado
+
             for (let item of enderecamentoPendente) {
                 let cfgRua = configRuas[item.rua];
                 let lado = (item.pos % 2 === 1) ? 'ladoImpar' : 'ladoPar';
                 let capacidade = cfgRua[lado].pallets;
                 let itensNaPosicao = estoque.filter(i => i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel).length;
+
+                // Verifica capacidade e, se necessário, substitui
                 if (itensNaPosicao >= capacidade) {
                     if (!confirm(`A posição R${item.rua} P${item.pos} Nv${item.nivel} já está com ${itensNaPosicao} pallet(s) (capacidade máxima ${capacidade}). Deseja substituir?`)) {
-                        continue;
+                        continue; // pula este item se o usuário não quiser substituir
                     } else {
                         estoque = estoque.filter(i => !(i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel));
                     }
                 }
+
+                // Atualiza ou insere no estoque
                 let existente = estoque.find(i => i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel && i.sku === item.sku);
                 if (existente) {
                     existente.qtd += item.qtd;
@@ -864,6 +873,8 @@
                         data: new Date().toISOString()
                     });
                 }
+
+                // Registra o endereçamento
                 enderecamentos.push({
                     data: new Date().toISOString(),
                     sku: item.sku,
@@ -875,11 +886,29 @@
                     nivel: item.nivel,
                     responsavel: userLogado.mat
                 });
+
+                // Adiciona ao resumo
+                resumo.push(`SKU ${item.sku} – ${item.qtd} caixas – Rua ${item.rua} Pos ${item.pos} Nível ${item.nivel}`);
             }
+
+            // Limpa a lista pendente e salva
             enderecamentoPendente = [];
             salvarDados();
-            alert('Endereçamentos concluídos!');
-            mostrarMissoes();
+
+            // Exibe o resumo na tela
+            let html = `
+                <div class="card">
+                    <h2>✅ Endereçamentos Concluídos</h2>
+                    <p>Os seguintes itens foram armazenados com sucesso:</p>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        ${resumo.map(r => `<li style="padding: 8px; border-bottom: 1px solid #eee;">📦 ${r}</li>`).join('')}
+                    </ul>
+                    <button class="btn-roxo" onclick="mostrarMissoes()">⬅️ VOLTAR AO MENU</button>
+                </div>
+            `;
+
+            document.getElementById('conteudo-abas').innerHTML = html;
+            document.getElementById('boas-vindas').style.display = 'none';
         };
 
         // ==================== VISUALIZAR ENDEREÇAMENTOS (com impressão) ====================
@@ -1915,4 +1944,4 @@
     })();
 </script>
 </body>
-        </html>         
+</html>
