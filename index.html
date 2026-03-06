@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -57,9 +56,8 @@
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
         
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 1rem; }
         input:focus, select:focus { outline: 2px solid var(--roxo-claro); border-color: transparent; }
@@ -94,7 +92,7 @@
         .filtros { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         
         @media (max-width: 768px) {
-            .grid-2, .grid-3, .grid-4, .grid-5, .grid-6 { grid-template-columns: 1fr; }
+            .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
             .menu-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -158,12 +156,12 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ==================== CONFIGURAÇÃO DAS RUAS (PADRÃO) ====================
+        // ==================== CONFIGURAÇÃO DAS RUAS (CORRIGIDA CONFORME IMAGEM) ====================
         let configRuas = {
-            A: { nome:'RUA A', ladoImpar:{tipo:'drive-in',pallets:2,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:180 },
+            A: { nome:'RUA A', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'drive-in',pallets:2,total:10}, niveis:6, capacidade:180 },
             B: { nome:'RUA B', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
             C: { nome:'RUA C', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
-            D: { nome:'RUA D', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'drive-in',pallets:5,total:10}, niveis:6, capacidade:360 }
+            D: { nome:'RUA D', ladoImpar:{tipo:'drive-in',pallets:5,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:360 }
         };
 
         function recalcularCapacidades() {
@@ -207,7 +205,7 @@
 
         let userLogado = null;
         let notificacaoInterval = null;
-        let dadosCarregados = false; // controle para aguardar dados do Firebase
+        let dadosCarregados = false;
 
         // ==================== FUNÇÕES DE PERSISTÊNCIA NO FIREBASE ====================
         function carregarDadosFirebase() {
@@ -229,7 +227,6 @@
                     configRuas = dados.configRuas || configRuas;
                     notificacoesNaoLidas = dados.notificacoesNaoLidas || [];
                 } else {
-                    // Primeiro acesso: popular com usuários padrão
                     const usuariosPadrao = [
                         { mat:'000000', sen:'master', nome:'Glailton Nascimento', role:'dev' },
                         { mat:'100100', sen:'123456', nome:'ALEX', role:'analista' },
@@ -251,7 +248,7 @@
                 console.log('Dados carregados do Firebase');
             }).catch((error) => {
                 console.error('Erro ao carregar dados:', error);
-                dadosCarregados = true; // libera mesmo com erro, mas com dados vazios
+                dadosCarregados = true;
             });
         }
 
@@ -277,10 +274,8 @@
                 .catch((error) => console.error('Erro ao salvar:', error));
         }
 
-        // ==================== CARREGA DADOS ANTES DE QUALQUER AÇÃO ====================
         carregarDadosFirebase();
 
-        // ==================== FUNÇÕES UTILITÁRIAS ====================
         window.toggleSenha = function(id) {
             const input = document.getElementById(id);
             if (input) input.type = input.type === 'password' ? 'text' : 'password';
@@ -378,7 +373,6 @@
             else if (u.role === 'encarregado') msg = `Visão do turno ${u.turno}`;
             document.getElementById('welcome-mensagem').innerText = msg;
 
-            // Menu principal com 3 opções
             let menu = document.getElementById('menu-dinamico');
             menu.innerHTML = `
                 <button class="btn-menu" onclick="mostrarConfigRuas()">⚙️ CONFIG RUAS</button>
@@ -389,9 +383,8 @@
             document.getElementById('boas-vindas').style.display = 'block';
             atualizarBadgeNotificacoes();
             iniciarPollingNotificacoes();
-            salvarDados(); // opcional, apenas para registrar o login
+            salvarDados();
 
-            // Verificar notificação de contagem agendada
             verificarNotificacaoContagem();
         };
 
@@ -475,7 +468,6 @@
                     <div class="card" onclick="mostrarGestaoRuasVazias()"><h3>🟢 GESTÃO RUAS VAZIAS</h3><p>Acionar verificação</p></div>
                     <div class="card" onclick="mostrarEquipe()"><h3>👥 EQUIPE</h3><p>Cadastrar colaboradores</p></div>
                     <div class="card" onclick="mostrarConfigNotificacao()"><h3>🔔 NOTIFICAÇÃO</h3><p>Configurar lembrete de contagem</p></div>
-                    <!-- NOVO: Endereçar para analista -->
                     <div class="card" onclick="mostrarEnderecamento()"><h3>📍 ENDEREÇAR</h3><p>Registrar entrada no pulmão</p></div>
                 `;
             } else if (userLogado.role === 'gestor') {
@@ -514,7 +506,7 @@
             document.getElementById('boas-vindas').style.display = 'none';
         };
 
-        // ==================== CADASTRO SKU (COM IMPORTAÇÃO CSV) ====================
+        // ==================== CADASTRO SKU ====================
         window.mostrarCadastroSku = function() {
             let html = `<div class="card"><h2>📦 CADASTRO DE SKU</h2>`;
             if (userLogado.role === 'analista' || userLogado.role === 'dev') {
@@ -526,7 +518,6 @@
                     <button class="btn-verde" onclick="cadastrarSku()">CADASTRAR</button>
                 </div>`;
             }
-            // ===== IMPORTAR CSV =====
             html += `<div class="card"><h3>📥 IMPORTAR SKUs VIA CSV</h3>
                 <input type="file" id="csv-sku-file" accept=".csv" style="margin-bottom:10px;">
                 <button class="btn-azul" onclick="importarSkuCSV()">📤 IMPORTAR</button>
@@ -569,7 +560,6 @@
                 const lines = text.split('\n');
                 let importados = 0;
                 let erros = [];
-                // Assume que a primeira linha é cabeçalho (ignoramos)
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
                     if (line === '') continue;
@@ -599,7 +589,6 @@
                 if (erros.length) {
                     divResultado.innerHTML += `<p style="color:red;">Erros:<br>${erros.join('<br>')}</p>`;
                 }
-                // Atualiza a consulta se estiver visível
                 consultarSkuCadastro();
             };
             reader.readAsText(file);
@@ -669,7 +658,7 @@
             consultarSkuCadastro();
         };
 
-        // ==================== EQUIPE (com telefone) ====================
+        // ==================== EQUIPE ====================
         window.mostrarEquipe = function() {
             let html = `<div class="card"><h2>👥 GESTÃO DE EQUIPE</h2>`;
             if (userLogado.role === 'analista' || userLogado.role === 'dev') {
@@ -721,10 +710,31 @@
 
         window.removerColaborador = function(mat) { if (confirm('Remover?')) { usuarios = usuarios.filter(u => u.mat !== mat); salvarDados(); mostrarEquipe(); } };
 
-        // ==================== ENDEREÇAMENTO (com lista temporária e botão copiar) ====================
+        // ==================== RASCUNHOS (LOCALSTORAGE) ====================
+        function salvarRascunhoEnderecamento() {
+            localStorage.setItem('rascunhoEnderecamento', JSON.stringify(enderecamentoPendente));
+        }
+        function carregarRascunhoEnderecamento() {
+            let r = localStorage.getItem('rascunhoEnderecamento');
+            if (r) {
+                try { enderecamentoPendente = JSON.parse(r); } catch(e) { enderecamentoPendente = []; }
+            } else enderecamentoPendente = [];
+        }
+        function salvarRascunhoMapeamento() {
+            localStorage.setItem('rascunhoMapeamento', JSON.stringify(itensMapeamentoTemp));
+        }
+        function carregarRascunhoMapeamento() {
+            let r = localStorage.getItem('rascunhoMapeamento');
+            if (r) {
+                try { itensMapeamentoTemp = JSON.parse(r); } catch(e) { itensMapeamentoTemp = []; }
+            } else itensMapeamentoTemp = [];
+        }
+
+        // ==================== ENDEREÇAMENTO ====================
         let enderecamentoPendente = [];
 
         window.mostrarEnderecamento = function() {
+            carregarRascunhoEnderecamento();
             let html = `<div class="card"><h2>📍 ENDEREÇAMENTO (Pulmão)</h2>
                 <div class="card"><h3>Registrar endereçamento</h3>
                     <div class="grid-5">
@@ -751,12 +761,13 @@
                 <h3>Itens pendentes de endereçamento</h3>
                 <div id="lista-end-pendente" class="lista-dados"></div>
                 <button class="btn-verde" onclick="finalizarEnderecamentos()" ${enderecamentoPendente.length === 0 ? 'disabled' : ''}>✅ ENVIAR TODOS</button>
+                <button class="btn-cinza" onclick="limparRascunhoEnderecamento()" ${enderecamentoPendente.length === 0 ? 'disabled' : ''}>🗑️ LIMPAR RASCUNHO</button>
                 <datalist id="sku-list">${skuCadastro.map(s => `<option value="${s.sku}">`).join('')}</datalist>
             </div>`;
             document.getElementById('conteudo-abas').innerHTML = html;
             document.getElementById('boas-vindas').style.display = 'none';
             atualizarListaEndPendente();
-            // Auto-detectar tipo
+
             document.getElementById('end-qtd').addEventListener('input', function() {
                 let sku = document.getElementById('end-sku').value.toUpperCase();
                 let qtd = parseInt(this.value);
@@ -781,6 +792,14 @@
             });
         };
 
+        window.limparRascunhoEnderecamento = function() {
+            if (confirm('Limpar todos os itens pendentes?')) {
+                enderecamentoPendente = [];
+                salvarRascunhoEnderecamento();
+                atualizarListaEndPendente();
+            }
+        };
+
         window.adicionarEnderecamentoPendente = function() {
             let rua = document.getElementById('end-rua').value;
             let pos = parseInt(document.getElementById('end-pos').value);
@@ -793,6 +812,7 @@
             if (!cad) return alert('SKU não cadastrado');
             let tipo = (qtd === cad.caixasPorPallet) ? 'P' : 'F';
             enderecamentoPendente.push({ rua, pos, nivel, sku, lote, qtd, tipo });
+            salvarRascunhoEnderecamento();
             atualizarListaEndPendente();
             document.getElementById('end-sku').value = '';
             document.getElementById('end-lote').value = '';
@@ -825,7 +845,6 @@
             document.getElementById('end-sku').value = item.sku;
             document.getElementById('end-lote').value = item.lote;
             document.getElementById('end-qtd').value = item.qtd;
-            // Atualiza o tipo auto
             let cad = skuCadastro.find(s => s.sku === item.sku);
             if (cad) {
                 document.getElementById('end-tipo-auto').innerText = (item.qtd === cad.caixasPorPallet) ? 'P (Pallet)' : 'F (Fração)';
@@ -834,31 +853,30 @@
 
         window.removerEnderecamentoPendente = function(idx) {
             enderecamentoPendente.splice(idx, 1);
+            salvarRascunhoEnderecamento();
             atualizarListaEndPendente();
         };
 
-        // ==================== FUNÇÃO FINALIZAR ENDEREÇAMENTOS (ATUALIZADA) ====================
         window.finalizarEnderecamentos = function() {
             if (enderecamentoPendente.length === 0) return alert('Nenhum item para enviar');
-
-            let resumo = []; // Para guardar os detalhes de cada item armazenado
-
+            let itensNaoProcessados = [];
             for (let item of enderecamentoPendente) {
                 let cfgRua = configRuas[item.rua];
                 let lado = (item.pos % 2 === 1) ? 'ladoImpar' : 'ladoPar';
                 let capacidade = cfgRua[lado].pallets;
                 let itensNaPosicao = estoque.filter(i => i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel).length;
-
-                // Verifica capacidade e, se necessário, substitui
+                let processar = true;
                 if (itensNaPosicao >= capacidade) {
                     if (!confirm(`A posição R${item.rua} P${item.pos} Nv${item.nivel} já está com ${itensNaPosicao} pallet(s) (capacidade máxima ${capacidade}). Deseja substituir?`)) {
-                        continue; // pula este item se o usuário não quiser substituir
+                        processar = false;
                     } else {
                         estoque = estoque.filter(i => !(i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel));
                     }
                 }
-
-                // Atualiza ou insere no estoque
+                if (!processar) {
+                    itensNaoProcessados.push(item);
+                    continue;
+                }
                 let existente = estoque.find(i => i.rua === item.rua && i.posicao === item.pos && i.nivel === item.nivel && i.sku === item.sku);
                 if (existente) {
                     existente.qtd += item.qtd;
@@ -875,8 +893,6 @@
                         data: new Date().toISOString()
                     });
                 }
-
-                // Registra o endereçamento
                 enderecamentos.push({
                     data: new Date().toISOString(),
                     sku: item.sku,
@@ -888,32 +904,19 @@
                     nivel: item.nivel,
                     responsavel: userLogado.mat
                 });
-
-                // Adiciona ao resumo
-                resumo.push(`SKU ${item.sku} – ${item.qtd} caixas – Rua ${item.rua} Pos ${item.pos} Nível ${item.nivel}`);
             }
-
-            // Limpa a lista pendente e salva
-            enderecamentoPendente = [];
+            enderecamentoPendente = itensNaoProcessados;
+            salvarRascunhoEnderecamento();
             salvarDados();
-
-            // Exibe o resumo na tela
-            let html = `
-                <div class="card">
-                    <h2>✅ Endereçamentos Concluídos</h2>
-                    <p>Os seguintes itens foram armazenados com sucesso:</p>
-                    <ul style="list-style-type: none; padding-left: 0;">
-                        ${resumo.map(r => `<li style="padding: 8px; border-bottom: 1px solid #eee;">📦 ${r}</li>`).join('')}
-                    </ul>
-                    <button class="btn-roxo" onclick="mostrarMissoes()">⬅️ VOLTAR AO MENU</button>
-                </div>
-            `;
-
-            document.getElementById('conteudo-abas').innerHTML = html;
-            document.getElementById('boas-vindas').style.display = 'none';
+            atualizarListaEndPendente();
+            if (itensNaoProcessados.length === 0) {
+                alert('Todos os endereçamentos foram concluídos!');
+            } else {
+                alert(`${itensNaoProcessados.length} item(ns) não foram processados e permanecem na lista.`);
+            }
         };
 
-        // ==================== VISUALIZAR ENDEREÇAMENTOS (com impressão) ====================
+        // ==================== VISUALIZAR ENDEREÇAMENTOS ====================
         window.mostrarVisualizarEnderecamentos = function() {
             let html = `<div class="card"><h2>📍 ENDEREÇAMENTOS REALIZADOS</h2>
                 <div class="lista-dados">`;
@@ -1117,11 +1120,9 @@
             html += `</div>`;
             document.getElementById('conteudo-abas').innerHTML = html;
             document.getElementById('boas-vindas').style.display = 'none';
-            // Adicionar primeira linha de SKU
             adicionarSkuPick();
         };
 
-        let contagemParcialPick = [];
         window.adicionarSkuPick = function() {
             let container = document.getElementById('skus-pick');
             if (!container) return;
@@ -1150,7 +1151,7 @@
             mostrarMissoes();
         };
 
-        // ==================== GESTÃO DE CONTAGEM (para analista/encarregado) ====================
+        // ==================== GESTÃO DE CONTAGEM ====================
         window.mostrarGestaoContagem = function() {
             let html = `<div class="card"><h2>🔢 GESTÃO DE CONTAGEM</h2>`;
             if (userLogado.role === 'analista' || userLogado.role === 'encarregado') {
@@ -1183,7 +1184,7 @@
             mostrarGestaoContagem();
         };
 
-        // ==================== GESTÃO DE RUAS VAZIAS (analista/encarregado) ====================
+        // ==================== GESTÃO DE RUAS VAZIAS ====================
         window.mostrarGestaoRuasVazias = function() {
             let html = `<div class="card"><h2>🟢 GESTÃO DE RUAS VAZIAS</h2>`;
             if (userLogado.role === 'analista' || userLogado.role === 'encarregado') {
@@ -1258,7 +1259,7 @@
             mostrarRuasVaziasColaborador();
         };
 
-        // ==================== MAPEAMENTO ANALISTA (com filtros e impressão) ====================
+        // ==================== MAPEAMENTO ANALISTA ====================
         window.mostrarMapeamentoAnalista = function() {
             let html = `<div class="card"><h2>🗺️ MAPEAMENTO (INVENTÁRIO)</h2>`;
             if (userLogado.role === 'analista' || userLogado.role === 'dev') {
@@ -1297,7 +1298,7 @@
             let tabela = `<table style="width:100%; border-collapse:collapse;">
                 <tr><th>Data</th><th>Responsável</th><th>Itens</th><th>Ações</th></tr>`;
             lista.forEach((m, idx) => {
-                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})${i.lote ? ' Lote:'+i.lote : ''}`).join(', ');
+                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})`).join(', ');
                 tabela += `<tr>
                     <td>${new Date(m.data).toLocaleString()}</td>
                     <td>${m.responsavel}</td>
@@ -1332,7 +1333,7 @@
                 lista = lista.filter(m => m.itens.some(i => i.sku.includes(filtroSKU.toUpperCase())));
             }
             let conteudo = lista.map(m => {
-                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})${i.lote ? ' Lote:'+i.lote : ''}`).join('; ');
+                let itensStr = m.itens.map(i => `${i.sku}:${i.qtd} (R${i.rua} P${i.pos} Nv${i.nivel})`).join('; ');
                 return `${new Date(m.data).toLocaleString()} - Resp: ${m.responsavel} - Itens: ${itensStr}`;
             }).join('\n');
             let janela = window.open('', '_blank');
@@ -1349,7 +1350,7 @@
                 if (existente) {
                     existente.sku = item.sku;
                     existente.qtd = item.qtd;
-                    existente.lote = item.lote || '';
+                    existente.lote = '';
                 } else {
                     estoque.push({
                         sku: item.sku,
@@ -1357,12 +1358,11 @@
                         rua: item.rua,
                         posicao: item.pos,
                         nivel: item.nivel,
-                        lote: item.lote || '',
+                        lote: '',
                         data: new Date().toISOString()
                     });
                 }
             });
-            // Remover o mapeamento do histórico (opcional)
             if (confirm('Deseja remover este mapeamento do histórico?')) {
                 mapeamentos.splice(index, 1);
             }
@@ -1391,16 +1391,16 @@
             mostrarMapeamentoAnalista();
         };
 
-        // ==================== MAPEAMENTO COLABORADOR (COM CAMPO LOTE) ====================
+        // ==================== MAPEAMENTO COLABORADOR ====================
         let itensMapeamentoTemp = [];
 
         window.mostrarMapeamentoColaborador = function() {
+            carregarRascunhoMapeamento();
             let html = `<div class="card"><h2>🗺️ REGISTRAR MAPEAMENTO (INVENTÁRIO)</h2>
                 <div class="card"><h3>Itens do inventário</h3>
-                    <div class="grid-6" id="form-mapeamento">
+                    <div class="grid-5" id="form-mapeamento">
                         <input type="text" id="map-sku" placeholder="SKU" list="sku-list">
                         <input type="number" id="map-qtd" placeholder="Quantidade">
-                        <input type="text" id="map-lote" placeholder="Lote">
                         <select id="map-rua">
                             <option value="A">RUA A</option>
                             <option value="B">RUA B</option>
@@ -1418,29 +1418,35 @@
                 <h3>Itens pendentes de mapeamento</h3>
                 <div id="itens-mapeamento" class="lista-dados"></div>
                 <button class="btn-verde" onclick="finalizarMapeamentoColaborador()">✅ ENVIAR MAPEAMENTO</button>
+                <button class="btn-cinza" onclick="limparRascunhoMapeamento()" ${itensMapeamentoTemp.length === 0 ? 'disabled' : ''}>🗑️ LIMPAR RASCUNHO</button>
                 <datalist id="sku-list">${skuCadastro.map(s => `<option value="${s.sku}">`).join('')}</datalist>
             </div>`;
             document.getElementById('conteudo-abas').innerHTML = html;
             document.getElementById('boas-vindas').style.display = 'none';
-            itensMapeamentoTemp = [];
             atualizarListaMapeamentoPendente();
+        };
+
+        window.limparRascunhoMapeamento = function() {
+            if (confirm('Limpar todos os itens pendentes?')) {
+                itensMapeamentoTemp = [];
+                salvarRascunhoMapeamento();
+                atualizarListaMapeamentoPendente();
+            }
         };
 
         window.adicionarItemMapeamento = function() {
             let sku = document.getElementById('map-sku').value.toUpperCase();
             let qtd = parseInt(document.getElementById('map-qtd').value);
-            let lote = document.getElementById('map-lote').value;
             let rua = document.getElementById('map-rua').value;
             let pos = parseInt(document.getElementById('map-pos').value);
             let nivel = document.getElementById('map-nivel').value;
-            if (!sku || !qtd || !rua || !pos || !nivel) return alert('Preencha SKU, quantidade, rua, posição e nível');
+            if (!sku || !qtd || !rua || !pos || !nivel) return alert('Preencha todos os campos');
             if (!skuCadastro.find(s => s.sku === sku)) return alert('SKU não cadastrado');
-            itensMapeamentoTemp.push({ sku, qtd, lote, rua, pos, nivel });
+            itensMapeamentoTemp.push({ sku, qtd, rua, pos, nivel });
+            salvarRascunhoMapeamento();
             atualizarListaMapeamentoPendente();
-            // Limpar campos
             document.getElementById('map-sku').value = '';
             document.getElementById('map-qtd').value = '';
-            document.getElementById('map-lote').value = '';
         };
 
         function atualizarListaMapeamentoPendente() {
@@ -1452,7 +1458,7 @@
             }
             div.innerHTML = itensMapeamentoTemp.map((item, idx) => 
                 `<div class="item-list">
-                    <div>SKU ${item.sku} - Qtd ${item.qtd} - Lote ${item.lote || '—'} - R${item.rua} P${item.pos} Nv${item.nivel}</div>
+                    <div>SKU ${item.sku} - Qtd ${item.qtd} - R${item.rua} P${item.pos} Nv${item.nivel}</div>
                     <div>
                         <button class="btn-azul" onclick="copiarItemMapeamento(${idx})">📋 Copiar</button>
                         <button class="btn-alerta" onclick="removerItemMapeamentoTemp(${idx})">❌</button>
@@ -1465,7 +1471,6 @@
             let item = itensMapeamentoTemp[idx];
             document.getElementById('map-sku').value = item.sku;
             document.getElementById('map-qtd').value = item.qtd;
-            document.getElementById('map-lote').value = item.lote || '';
             document.getElementById('map-rua').value = item.rua;
             document.getElementById('map-pos').value = item.pos;
             document.getElementById('map-nivel').value = item.nivel;
@@ -1473,6 +1478,7 @@
 
         window.removerItemMapeamentoTemp = function(idx) {
             itensMapeamentoTemp.splice(idx, 1);
+            salvarRascunhoMapeamento();
             atualizarListaMapeamentoPendente();
         };
 
@@ -1481,13 +1487,14 @@
             mapeamentos.push({
                 data: new Date().toISOString(),
                 responsavel: userLogado.mat,
-                itens: itensMapeamentoTemp.slice() // aqui já inclui o lote
+                itens: itensMapeamentoTemp.slice()
             });
             notificarParaPerfil(['analista'], `Novo mapeamento enviado por ${userLogado.nome}`, 'info');
             itensMapeamentoTemp = [];
+            salvarRascunhoMapeamento();
             salvarDados();
             alert('Mapeamento enviado com sucesso!');
-            mostrarMissoes();
+            atualizarListaMapeamentoPendente();
         };
 
         // ==================== CONSULTAS ====================
@@ -1524,7 +1531,7 @@
             document.getElementById('boas-vindas').style.display = 'none';
         };
 
-        // ==================== CONSULTA GERAL (corrigido botão Limpar) ====================
+        // ==================== CONSULTA GERAL ====================
         window.mostrarConsultaGeral = function() {
             let html = `<div class="card"><h2>🔍 CONSULTA GERAL (Pulmão - Níveis 2-6)</h2>
                 <div style="margin-bottom:10px;">
@@ -1943,10 +1950,6 @@
             alert('Solicitação rejeitada.');
             mostrarSolicitacoes();
         };
-
-        // ==================== INÍCIO ====================
-        // Não precisa de window.onload, pois o carregamento é assíncrono.
-        // A interface só será usada após dadosCarregados.
     })();
 </script>
 </body>
