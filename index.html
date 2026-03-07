@@ -157,13 +157,13 @@
         const database = firebase.database();
 
         // ==================== CONFIGURAÇÃO DAS RUAS (CORRIGIDA CONFORME IMAGEM) ====================
-        let configRuas = {
-            A: { nome:'RUA A', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'drive-in',pallets:2,total:10}, niveis:6, capacidade:180 },
-            B: { nome:'RUA B', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
-            C: { nome:'RUA C', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
-            D: { nome:'RUA D', ladoImpar:{tipo:'drive-in',pallets:5,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:360 }
-        };
-
+        
+   let configRuas = {
+    A: { nome:'RUA A', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'drive-in',pallets:2,total:10}, niveis:6, capacidade:180 },
+    B: { nome:'RUA B', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
+    C: { nome:'RUA C', ladoImpar:{tipo:'porta-pallet',pallets:1,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:120 },
+    D: { nome:'RUA D', ladoImpar:{tipo:'drive-in',pallets:5,total:10}, ladoPar:{tipo:'porta-pallet',pallets:1,total:10}, niveis:6, capacidade:360 }
+   };
         function recalcularCapacidades() {
             for(let r in configRuas) {
                 let cfg = configRuas[r];
